@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-green: #0F5E3D;
+    --brand-green-hover: #0A472E;
+    --brand-ivory: #FAF6ED;
+    --brand-cream: #F4EFE6;
+    --brand-card: #FCF9F2;
+    --brand-border: #DFD6C2;
+    --brand-text-primary: #14291E;
+    --brand-text-secondary: #485C50;
+    --brand-text-muted: #73867A;
+    --brand-gold: #C99738;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--brand-ivory);
+    color: var(--brand-text-primary);
+  }
+
+  body {
+    background-color: var(--brand-ivory);
+    color: var(--brand-text-primary);
+    min-height: 100vh;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: #0F5E3D;
+    color: #FAF6ED;
+  }
+
+  /* Refined Focus styles */
+  :focus-visible {
+    outline: 2px solid #0F5E3D;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .bg-subtle-pattern {
+    background-image: radial-gradient(rgba(15, 94, 61, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
