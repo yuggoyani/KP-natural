@@ -274,8 +274,8 @@ export default function CheckoutPage() {
 
       const result = await response.json();
 
-      if (!result.success || !result.orderId) {
-        setSubmitError(result.error || "Failed to create order. Please check details and try again.");
+      if (!response.ok || !result.success || !result.orderId) {
+        setSubmitError(result.error || "Failed to create order in database. Please check your connection and try again.");
         setIsSubmitting(false);
         return;
       }

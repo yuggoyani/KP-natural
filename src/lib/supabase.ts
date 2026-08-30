@@ -1,18 +1,43 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+export function getSupabaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    ""
+  ).trim();
+}
+
+export function getSupabaseAnonKey(): string {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    ""
+  ).trim();
+}
+
+export function getSupabaseServiceRoleKey(): string {
+  return (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    ""
+  ).trim();
+}
 
 /**
  * Check whether Supabase environment variables are properly configured
  */
 export function isSupabaseConfigured(): boolean {
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
+  const serviceKey = getSupabaseServiceRoleKey();
+  const key = serviceKey || anonKey;
+
   return (
-    Boolean(supabaseUrl) &&
-    Boolean(supabaseAnonKey) &&
-    !supabaseUrl.includes("your-project") &&
-    !supabaseAnonKey.includes("your-supabase-anon-key")
+    Boolean(url) &&
+    Boolean(key) &&
+    !url.includes("your-project") &&
+    !key.includes("your-supabase-anon-key")
   );
 }
 
@@ -20,21 +45,27 @@ export function isSupabaseConfigured(): boolean {
  * Browser-safe Supabase client (using anon key)
  */
 export const supabase = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(getSupabaseUrl(), getSupabaseAnonKey())
   : null;
 
 /**
  * Privileged server-side Supabase client (uses Service Role Key when available, otherwise Anon Key)
  * Strictly executed in API routes / Server Components only.
  */
-export function getServerSupabaseClient() {
-  if (!isSupabaseConfigured()) {
+export function getServerSupabaseClient(): SupabaseClient | null {
+  const url = getSupabaseUrl();
+  const serviceRoleKey = getSupabaseServiceRoleKey();
+  const anonKey = getSupabaseAnonKey();
+  const key = serviceRoleKey || anonKey;
+
+  if (!url || !key || url.includes("your-project")) {
     return null;
   }
-  const key = supabaseServiceRoleKey || supabaseAnonKey;
-  return createClient(supabaseUrl, key, {
+
+  return createClient(url, key, {
     auth: {
       persistSession: false,
+      autoRefreshToken: false,
     },
   });
 }

@@ -1,101 +1,48 @@
-import fs from "fs";
-import path from "path";
 import { getServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
-import { OrderRecord, OrderItemRecord, OrderStatus, PaymentStatus } from "@/types/database";
-
-const DATA_DIR = path.join(process.cwd(), "data");
-const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
-
-interface StoredOrderData {
-  order: OrderRecord;
-  items: OrderItemRecord[];
-}
+import { OrderRecord, OrderItemRecord } from "@/types/database";
 
 /**
- * Ensure data directory and file exist
- */
-function ensureDataFile() {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(ORDERS_FILE)) {
-      fs.writeFileSync(ORDERS_FILE, JSON.stringify([]), "utf-8");
-    }
-  } catch (err) {
-    console.error("Failed to initialize orders data file:", err);
-  }
-}
-
-/**
- * Read all orders from local persistent store
- */
-function readLocalStore(): StoredOrderData[] {
-  ensureDataFile();
-  try {
-    const content = fs.readFileSync(ORDERS_FILE, "utf-8");
-    return JSON.parse(content || "[]");
-  } catch (err) {
-    console.error("Error reading local orders file:", err);
-    return [];
-  }
-}
-
-/**
- * Write all orders to local persistent store atomically
- */
-function writeLocalStore(data: StoredOrderData[]) {
-  ensureDataFile();
-  try {
-    fs.writeFileSync(ORDERS_FILE, JSON.stringify(data, null, 2), "utf-8");
-  } catch (err) {
-    console.error("Error writing local orders file:", err);
-  }
-}
-
-/**
- * Unified Order Storage Layer
+ * Pure Supabase Order Storage Layer
  * Single Source of Truth for Customer Checkout, Tracking, and Admin Panel
+ * (No local filesystem or JSON files)
  */
 export const orderStorage = {
   /**
-   * Save a newly created order and its item list
+   * Save a newly created order and its item list directly to Supabase
+   * Throws an error if Supabase insertion fails.
    */
   async createOrder(order: OrderRecord, items: OrderItemRecord[]): Promise<boolean> {
     const supabase = getServerSupabaseClient();
-    let savedToSupabase = false;
 
-    // 1. Try Supabase if configured
-    if (supabase && isSupabaseConfigured()) {
-      try {
-        const { error: orderError } = await supabase.from("orders").insert([order]);
-        if (!orderError) {
-          const { error: itemsError } = await supabase.from("order_items").insert(items);
-          if (!itemsError) {
-            savedToSupabase = true;
-          }
-        }
-      } catch (err) {
-        console.error("Supabase createOrder error:", err);
+    if (!supabase || !isSupabaseConfigured()) {
+      throw new Error(
+        "Supabase is not configured. Please ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY are set in environment variables."
+      );
+    }
+
+    // 1. Insert into public.orders
+    const { error: orderError } = await supabase.from("orders").insert([order]);
+    if (orderError) {
+      console.error("Supabase createOrder (orders table) error:", orderError);
+      throw new Error(`Failed to save order in database: ${orderError.message}`);
+    }
+
+    // 2. Insert into public.order_items
+    if (items && items.length > 0) {
+      const { error: itemsError } = await supabase.from("order_items").insert(items);
+      if (itemsError) {
+        console.error("Supabase createOrder (order_items table) error:", itemsError);
+        // Rollback inserted order if item insertion fails
+        await supabase.from("orders").delete().eq("order_id", order.order_id);
+        throw new Error(`Failed to save order items in database: ${itemsError.message}`);
       }
     }
 
-    // 2. Always persist to server store (guarantees local sync & offline resilience)
-    const localData = readLocalStore();
-    const existingIndex = localData.findIndex((d) => d.order.order_id === order.order_id);
-
-    if (existingIndex >= 0) {
-      localData[existingIndex] = { order, items };
-    } else {
-      localData.unshift({ order, items });
-    }
-
-    writeLocalStore(localData);
     return true;
   },
 
   /**
-   * Get all orders with filtering and sorting
+   * Get all orders with filtering and sorting directly from Supabase
    */
   async getAllOrders(filters?: {
     paymentStatus?: string;
@@ -104,69 +51,39 @@ export const orderStorage = {
     sortBy?: string;
   }): Promise<OrderRecord[]> {
     const supabase = getServerSupabaseClient();
-    let orders: OrderRecord[] = [];
-
-    // 1. Try Supabase if configured
-    if (supabase && isSupabaseConfigured()) {
-      try {
-        let query = supabase.from("orders").select("*");
-
-        if (filters?.paymentStatus && filters.paymentStatus !== "ALL") {
-          query = query.eq("payment_status", filters.paymentStatus);
-        }
-        if (filters?.orderStatus && filters.orderStatus !== "ALL") {
-          query = query.eq("order_status", filters.orderStatus);
-        }
-
-        if (filters?.sortBy === "OLDEST") {
-          query = query.order("created_at", { ascending: true });
-        } else if (filters?.sortBy === "AMOUNT_HIGH") {
-          query = query.order("total_amount", { ascending: false });
-        } else if (filters?.sortBy === "AMOUNT_LOW") {
-          query = query.order("total_amount", { ascending: true });
-        } else {
-          query = query.order("created_at", { ascending: false });
-        }
-
-        const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          orders = data;
-        }
-      } catch (err) {
-        console.error("Supabase getAllOrders error:", err);
-      }
+    if (!supabase || !isSupabaseConfigured()) {
+      console.error("Supabase not configured in getAllOrders");
+      return [];
     }
 
-    // 2. If Supabase is not configured or returned empty, read from server store
-    if (orders.length === 0) {
-      const localData = readLocalStore();
-      orders = localData.map((d) => d.order);
+    let query = supabase.from("orders").select("*");
 
-      if (filters?.paymentStatus && filters.paymentStatus !== "ALL") {
-        orders = orders.filter((o) => o.payment_status === filters.paymentStatus);
-      }
-      if (filters?.orderStatus && filters.orderStatus !== "ALL") {
-        orders = orders.filter((o) => o.order_status === filters.orderStatus);
-      }
-
-      if (filters?.sortBy === "OLDEST") {
-        orders.sort(
-          (a, b) =>
-            new Date(a.created_at || "").getTime() - new Date(b.created_at || "").getTime()
-        );
-      } else if (filters?.sortBy === "AMOUNT_HIGH") {
-        orders.sort((a, b) => Number(b.total_amount) - Number(a.total_amount));
-      } else if (filters?.sortBy === "AMOUNT_LOW") {
-        orders.sort((a, b) => Number(a.total_amount) - Number(b.total_amount));
-      } else {
-        orders.sort(
-          (a, b) =>
-            new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime()
-        );
-      }
+    if (filters?.paymentStatus && filters.paymentStatus !== "ALL") {
+      query = query.eq("payment_status", filters.paymentStatus);
+    }
+    if (filters?.orderStatus && filters.orderStatus !== "ALL") {
+      query = query.eq("order_status", filters.orderStatus);
     }
 
-    // 3. Apply search filter if present
+    if (filters?.sortBy === "OLDEST") {
+      query = query.order("created_at", { ascending: true });
+    } else if (filters?.sortBy === "AMOUNT_HIGH") {
+      query = query.order("total_amount", { ascending: false });
+    } else if (filters?.sortBy === "AMOUNT_LOW") {
+      query = query.order("total_amount", { ascending: true });
+    } else {
+      query = query.order("created_at", { ascending: false });
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error("Supabase getAllOrders error:", error);
+      return [];
+    }
+
+    let orders: OrderRecord[] = data || [];
+
+    // Apply search filter if present
     if (filters?.search) {
       const s = filters.search.toLowerCase().trim();
       orders = orders.filter((o) => {
@@ -185,92 +102,83 @@ export const orderStorage = {
   },
 
   /**
-   * Get single order and items by order_id
+   * Get single order and items by 5-digit order_id directly from Supabase
    */
   async getOrder(orderId: string): Promise<{ order: OrderRecord | null; items: OrderItemRecord[] }> {
-    const supabase = getServerSupabaseClient();
     const cleanId = orderId.trim();
+    const supabase = getServerSupabaseClient();
 
-    // 1. Try Supabase if configured
-    if (supabase && isSupabaseConfigured()) {
-      try {
-        const { data: order, error: orderError } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("order_id", cleanId)
-          .single();
+    if (!supabase || !isSupabaseConfigured()) {
+      console.error("Supabase not configured in getOrder");
+      return { order: null, items: [] };
+    }
 
-        if (!orderError && order) {
-          const { data: items } = await supabase
-            .from("order_items")
-            .select("*")
-            .eq("order_id", cleanId);
+    try {
+      const { data: order, error: orderError } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("order_id", cleanId)
+        .maybeSingle();
 
-          return { order, items: items || [] };
-        }
-      } catch (err) {
-        console.error("Supabase getOrder error:", err);
+      if (orderError) {
+        console.error(`Supabase getOrder(${cleanId}) error:`, orderError);
+        return { order: null, items: [] };
       }
+
+      if (!order) {
+        return { order: null, items: [] };
+      }
+
+      const { data: items, error: itemsError } = await supabase
+        .from("order_items")
+        .select("*")
+        .eq("order_id", cleanId);
+
+      if (itemsError) {
+        console.error(`Supabase getOrder items error for ${cleanId}:`, itemsError);
+      }
+
+      return { order, items: items || [] };
+    } catch (err) {
+      console.error("Supabase getOrder exception:", err);
+      return { order: null, items: [] };
     }
-
-    // 2. Read from server store fallback
-    const localData = readLocalStore();
-    const found = localData.find((d) => d.order.order_id.toLowerCase() === cleanId.toLowerCase());
-
-    if (found) {
-      return { order: found.order, items: found.items };
-    }
-
-    return { order: null, items: [] };
   },
 
   /**
-   * Update order fields by order_id
+   * Update order fields by order_id directly in Supabase
    */
   async updateOrder(orderId: string, updates: Partial<OrderRecord>): Promise<OrderRecord | null> {
     const cleanId = orderId.trim();
     const supabase = getServerSupabaseClient();
-    let updatedRecord: OrderRecord | null = null;
 
-    // 1. Try Supabase if configured
-    if (supabase && isSupabaseConfigured()) {
-      try {
-        const { data, error } = await supabase
-          .from("orders")
-          .update({ ...updates, updated_at: new Date().toISOString() })
-          .eq("order_id", cleanId)
-          .select()
-          .single();
-
-        if (!error && data) {
-          updatedRecord = data;
-        }
-      } catch (err) {
-        console.error("Supabase updateOrder error:", err);
-      }
+    if (!supabase || !isSupabaseConfigured()) {
+      console.error("Supabase not configured in updateOrder");
+      return null;
     }
 
-    // 2. Always update local server store
-    const localData = readLocalStore();
-    const index = localData.findIndex((d) => d.order.order_id.toLowerCase() === cleanId.toLowerCase());
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("order_id", cleanId)
+        .select()
+        .maybeSingle();
 
-    if (index >= 0) {
-      localData[index].order = {
-        ...localData[index].order,
-        ...updates,
-        updated_at: new Date().toISOString(),
-      };
-      writeLocalStore(localData);
-      if (!updatedRecord) {
-        updatedRecord = localData[index].order;
+      if (error) {
+        console.error(`Supabase updateOrder(${cleanId}) error:`, error);
+        return null;
       }
-    }
 
-    return updatedRecord;
+      return data;
+    } catch (err) {
+      console.error("Supabase updateOrder exception:", err);
+      return null;
+    }
   },
 
   /**
-   * Customer tracking query: matches Order ID AND last 10 digits of mobile number
+   * Customer tracking query: matches Order ID AND last 10 digits of mobile number directly from Supabase
    */
   async trackOrder(
     orderId: string,

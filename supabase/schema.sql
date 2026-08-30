@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- KP Natural Dairy Farm - Official Database Schema
--- Step 11: Secure Admin Order Management & Manual Payment Verification
+-- Production Ready Supabase Database
 -- ==============================================================================
 
 -- Enable UUID extension
@@ -66,6 +66,7 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DE
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS utr_number VARCHAR(100);
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_screenshot_url TEXT;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_submitted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_review_requested_at TIMESTAMP WITH TIME ZONE;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_verified_at TIMESTAMP WITH TIME ZONE;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_verified_by VARCHAR(255);
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_rejection_reason TEXT;
@@ -130,55 +131,20 @@ DROP POLICY IF EXISTS "Service role has full access to orders" ON public.orders;
 DROP POLICY IF EXISTS "Service role has full access to order_items" ON public.order_items;
 DROP POLICY IF EXISTS "Public cannot update orders" ON public.orders;
 DROP POLICY IF EXISTS "Public cannot delete orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow all for server API and public on orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow all for server API and public on order_items" ON public.order_items;
 
--- Service Role Key has full access for server-side API routes
-CREATE POLICY "Service role has full access to orders"
+-- Full CRUD policies for API routes (both service_role and anon/authenticated keys)
+CREATE POLICY "Allow all for server API and public on orders"
 ON public.orders
 FOR ALL
-TO service_role
+TO anon, authenticated, service_role
 USING (true)
 WITH CHECK (true);
 
-CREATE POLICY "Service role has full access to order_items"
+CREATE POLICY "Allow all for server API and public on order_items"
 ON public.order_items
 FOR ALL
-TO service_role
+TO anon, authenticated, service_role
 USING (true)
 WITH CHECK (true);
-
--- Allow public checkout API to insert orders
-CREATE POLICY "Public can insert orders"
-ON public.orders
-FOR INSERT
-TO anon, authenticated
-WITH CHECK (true);
-
-CREATE POLICY "Public can insert order items"
-ON public.order_items
-FOR INSERT
-TO anon, authenticated
-WITH CHECK (true);
-
--- Public users cannot modify payment or order status directly (controlled via API)
-CREATE POLICY "Public cannot update orders"
-ON public.orders
-FOR UPDATE
-TO anon, authenticated
-USING (false);
-
--- Public users cannot delete orders
-CREATE POLICY "Public cannot delete orders"
-ON public.orders
-FOR DELETE
-TO anon, authenticated
-USING (false);
-
--- ==============================================================================
--- 6. OPTIONAL TEST DATA CLEANUP SCRIPT
--- Run this in Supabase SQL Editor to safely remove test orders without deleting production data:
---
--- DELETE FROM public.orders 
--- WHERE email LIKE '%@example.com' 
---    OR first_name = 'Test' 
---    OR order_id LIKE 'KP-%-TEST';
--- ==============================================================================
