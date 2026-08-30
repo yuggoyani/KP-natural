@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSessionFromRequest } from "@/lib/adminAuth";
 import { orderStorage } from "@/lib/orderStorage";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ orderId: string }> }

@@ -3,6 +3,10 @@ import { orderStorage } from "@/lib/orderStorage";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { SubmitPaymentRequest, SubmitPaymentResponse } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   try {
     const body: SubmitPaymentRequest = await req.json();

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSessionFromRequest } from "@/lib/adminAuth";
 import { orderStorage } from "@/lib/orderStorage";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ orderId: string }> }
@@ -21,21 +25,17 @@ export async function POST(
     }
 
     const body = await req.json().catch(() => ({}));
-    const { rejectionReason, adminNotes } = body;
+    const { reason, adminNotes } = body;
 
-    if (!rejectionReason || !rejectionReason.trim()) {
-      return NextResponse.json(
-        { success: false, error: "Rejection reason is required" },
-        { status: 400 }
-      );
-    }
+    const rejectionReason =
+      reason?.trim() ||
+      "Payment not received in UPI account. Please verify your transaction reference number.";
 
     const rejectedAt = new Date().toISOString();
 
     const updatedOrder = await orderStorage.updateOrder(orderId, {
       payment_status: "REJECTED",
-      order_status: "AWAITING_PAYMENT",
-      payment_rejection_reason: rejectionReason.trim(),
+      payment_rejection_reason: rejectionReason,
       payment_rejected_at: rejectedAt,
       payment_rejected_by: session.email,
       admin_notes: adminNotes || undefined,
@@ -50,12 +50,12 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: "Payment marked as rejected. Customer order preserved.",
+      message: "Payment marked as rejected. Customer track order updated with care helpline.",
       order: updatedOrder,
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to process payment rejection" },
+      { success: false, error: error.message || "Failed to reject payment" },
       { status: 500 }
     );
   }

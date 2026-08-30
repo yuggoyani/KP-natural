@@ -1,26 +1,22 @@
 import { NextResponse } from "next/server";
-import { getServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
+import { getServerSupabaseClient, isSupabaseConfigured, getSupabaseDiagnostics } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function GET() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-
-  const envStatus = {
-    hasUrl: Boolean(supabaseUrl && !supabaseUrl.includes("your-project")),
-    hasAnonKey: Boolean(supabaseAnonKey && !supabaseAnonKey.includes("your-supabase-anon-key")),
-    hasServiceRoleKey: Boolean(supabaseServiceRoleKey && !supabaseServiceRoleKey.includes("your-supabase-service-role-key")),
-  };
+  const diagnostics = getSupabaseDiagnostics();
 
   if (!isSupabaseConfigured()) {
     return NextResponse.json({
       connected: false,
       status: "ENV_MISSING",
-      message: "Supabase environment variables are not configured in .env.local",
-      envStatus,
+      message: "Supabase environment variables are missing or unconfigured.",
+      diagnostics,
       instructions: [
-        "Create .env.local in project root",
-        "Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY",
+        "In Vercel Project Settings -> Environment Variables, add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "Redeploy your project after setting environment variables",
         "Execute supabase/schema.sql in Supabase SQL Editor",
       ],
     });
@@ -32,7 +28,7 @@ export async function GET() {
       connected: false,
       status: "CLIENT_INIT_FAILED",
       message: "Failed to initialize Supabase client",
-      envStatus,
+      diagnostics,
     });
   }
 
@@ -49,7 +45,7 @@ export async function GET() {
         status: "TABLES_MISSING_OR_RLS_BLOCKED",
         message: ordersError.message,
         hint: "Please run supabase/schema.sql in your Supabase project SQL Editor.",
-        envStatus,
+        diagnostics,
       });
     }
 
@@ -65,7 +61,7 @@ export async function GET() {
         status: "ORDER_ITEMS_TABLE_MISSING",
         message: itemsError.message,
         hint: "Please run supabase/schema.sql in your Supabase project SQL Editor.",
-        envStatus,
+        diagnostics,
       });
     }
 
@@ -74,14 +70,14 @@ export async function GET() {
       status: "READY",
       message: "Successfully connected to Supabase database with orders and order_items tables verified.",
       tables: ["orders", "order_items"],
-      envStatus,
+      diagnostics,
     });
-  } catch (error: any) {
+  } catch (err: any) {
     return NextResponse.json({
       connected: false,
-      status: "CONNECTION_FAILED",
-      message: error.message || "Network error contacting Supabase",
-      envStatus,
+      status: "CONNECTION_ERROR",
+      message: err.message || "Unknown error connecting to Supabase",
+      diagnostics,
     });
   }
 }

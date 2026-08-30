@@ -3,6 +3,10 @@ import { getAdminSessionFromRequest } from "@/lib/adminAuth";
 import { orderStorage } from "@/lib/orderStorage";
 import { OrderRecord, AdminOrderStats } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 export async function GET(req: NextRequest) {
   try {
     // 1. Validate Admin Authorization
@@ -53,6 +57,10 @@ export async function GET(req: NextRequest) {
     const isVerifiedOrProcessing = (o: OrderRecord) =>
       o.order_status === "PAYMENT_VERIFIED" || o.order_status === "PROCESSING";
 
+    const totalRevenue = allOrders
+      .filter(isVerifiedPayment)
+      .reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+
     const stats: AdminOrderStats = {
       totalOrders: allOrders.length,
       pendingPayment: allOrders.filter(isPendingPayment).length,
@@ -61,10 +69,10 @@ export async function GET(req: NextRequest) {
       processing: allOrders.filter((o) => o.order_status === "PROCESSING").length,
       dispatched: allOrders.filter((o) => o.order_status === "DISPATCHED").length,
       delivered: allOrders.filter((o) => o.order_status === "DELIVERED").length,
-      cancelled: allOrders.filter((o) => o.order_status === "CANCELLED").length,
-      totalRevenue: allOrders
-        .filter(isVerifiedPayment)
-        .reduce((sum, o) => sum + Number(o.total_amount || 0), 0),
+      cancelled: allOrders.filter(
+        (o) => o.order_status === "CANCELLED" || o.payment_status === "REJECTED"
+      ).length,
+      totalRevenue,
     };
 
     return NextResponse.json({
@@ -74,9 +82,9 @@ export async function GET(req: NextRequest) {
       adminEmail: session.email,
     });
   } catch (error: any) {
-    console.error("Admin orders API error:", error);
+    console.error("Admin Orders GET Exception:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to load admin orders" },
+      { success: false, error: error.message || "Failed to fetch admin orders" },
       { status: 500 }
     );
   }

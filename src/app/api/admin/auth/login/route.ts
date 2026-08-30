@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateAdminToken, validateAdminCredentials } from "@/lib/adminAuth";
-import { getServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
+import { validateAdminCredentials, generateAdminToken } from "@/lib/adminAuth";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const { email, password } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -13,52 +17,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    const isValid = validateAdminCredentials(email, password);
 
-    // 1. Check with Supabase Auth if configured
-    const supabase = getServerSupabaseClient();
-    let authenticated = false;
-
-    if (supabase && isSupabaseConfigured()) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password,
-      });
-
-      if (!error && data?.user) {
-        authenticated = true;
-      }
-    }
-
-    // 2. Check with secure environment/farm admin credentials fallback
-    if (!authenticated) {
-      authenticated = validateAdminCredentials(cleanEmail, password);
-    }
-
-    if (!authenticated) {
+    if (!isValid) {
       return NextResponse.json(
-        { success: false, error: "Invalid admin credentials" },
+        { success: false, error: "Invalid admin email or password" },
         { status: 401 }
       );
     }
 
-    // 3. Generate secure signed session token
-    const token = generateAdminToken(cleanEmail);
+    const token = generateAdminToken(email);
 
     const response = NextResponse.json({
       success: true,
       token,
-      email: cleanEmail,
-      message: "Admin authentication successful",
+      admin: {
+        email,
+        role: "ADMINISTRATOR",
+      },
     });
 
-    // Set secure cookie
+    // Also set httpOnly cookie for server component navigation
     response.cookies.set("kp_admin_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
-      maxAge: 24 * 60 * 60, // 24 hours
     });
 
     return response;

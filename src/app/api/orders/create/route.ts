@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { calculateServerOrderPricing } from "@/lib/serverPricing";
 import { generateOrderId } from "@/lib/orderUtils";
 import { orderStorage } from "@/lib/orderStorage";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isSupabaseConfigured, getSupabaseDiagnostics } from "@/lib/supabase";
 import { CreateOrderRequest, CreateOrderResponse, OrderRecord, OrderItemRecord } from "@/types/database";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     const calculatedPricing = calculateServerOrderPricing(cartItems);
 
-    // 4. Generate Unique Order ID (KP-YYYYMMDD-XXXX)
+    // 4. Generate Unique 5-digit Order ID (e.g. 48291)
     const orderId = generateOrderId();
 
     // Prepare Database Records
@@ -115,9 +119,9 @@ export async function POST(req: NextRequest) {
       isDemoMode: !isSupabaseConfigured(),
     });
   } catch (error: any) {
-    console.error("Order Creation Exception:", error);
+    console.error("Order Creation Exception:", error, getSupabaseDiagnostics());
     return NextResponse.json<CreateOrderResponse>(
-      { success: false, error: error.message || "Failed to create order" },
+      { success: false, error: error.message || "Failed to create order in database" },
       { status: 500 }
     );
   }

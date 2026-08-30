@@ -3,6 +3,10 @@ import { getAdminSessionFromRequest } from "@/lib/adminAuth";
 import { orderStorage } from "@/lib/orderStorage";
 import { OrderStatus } from "@/types/database";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ orderId: string }> }
@@ -59,9 +63,8 @@ export async function POST(
       updatePayload.delivered_at = new Date().toISOString();
     } else if (orderStatus === "CANCELLED") {
       updatePayload.cancelled_at = new Date().toISOString();
-      if (cancellationReason) {
-        updatePayload.cancellation_reason = cancellationReason;
-      }
+      updatePayload.cancellation_reason =
+        cancellationReason?.trim() || "Order cancelled by administrator.";
     }
 
     const updatedOrder = await orderStorage.updateOrder(orderId, updatePayload);

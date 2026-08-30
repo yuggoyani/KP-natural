@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { orderStorage } from "@/lib/orderStorage";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -62,24 +66,34 @@ export async function POST(req: NextRequest) {
       payment_submitted_at: order.payment_submitted_at,
       payment_verified_at: order.payment_verified_at,
       payment_rejection_reason: order.payment_rejection_reason,
+      cancellation_reason: order.cancellation_reason,
       dispatched_at: order.dispatched_at,
       delivered_at: order.delivered_at,
       cancelled_at: order.cancelled_at,
-      cancellation_reason: order.cancellation_reason,
       created_at: order.created_at,
     };
 
     return NextResponse.json({
       success: true,
       order: sanitizedOrder,
-      items: items || [],
+      items: items.map((i) => ({
+        order_id: i.order_id,
+        product_name: i.product_name,
+        product_type: i.product_type,
+        package_size: i.package_size,
+        quantity: i.quantity,
+        unit_price: i.unit_price,
+        line_total: i.line_total,
+        free_cocopeat_quantity: i.free_cocopeat_quantity,
+        created_at: i.created_at,
+      })),
     });
   } catch (error: any) {
-    console.error("Order tracking API error:", error);
+    console.error("Order Tracking Exception:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "We couldn't find an order matching those details. Please check your Order ID and registered mobile number.",
+        error: "An error occurred while retrieving order details. Please try again.",
       },
       { status: 500 }
     );

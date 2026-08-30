@@ -1,4 +1,4 @@
-import { getServerSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
+import { getServerSupabaseClient, getSupabaseDiagnostics } from "@/lib/supabase";
 import { OrderRecord, OrderItemRecord } from "@/types/database";
 
 /**
@@ -14,9 +14,11 @@ export const orderStorage = {
   async createOrder(order: OrderRecord, items: OrderItemRecord[]): Promise<boolean> {
     const supabase = getServerSupabaseClient();
 
-    if (!supabase || !isSupabaseConfigured()) {
+    if (!supabase) {
+      const diag = getSupabaseDiagnostics();
+      console.error("Supabase configuration missing at order creation:", diag);
       throw new Error(
-        "Supabase is not configured. Please ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY are set in environment variables."
+        `Supabase database connection is not configured (hasUrl: ${diag.hasUrl}, hasKey: ${diag.hasServiceRoleKey || diag.hasAnonKey}). Please verify NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel environment variables.`
       );
     }
 
@@ -51,8 +53,8 @@ export const orderStorage = {
     sortBy?: string;
   }): Promise<OrderRecord[]> {
     const supabase = getServerSupabaseClient();
-    if (!supabase || !isSupabaseConfigured()) {
-      console.error("Supabase not configured in getAllOrders");
+    if (!supabase) {
+      console.error("Supabase not configured in getAllOrders", getSupabaseDiagnostics());
       return [];
     }
 
@@ -108,8 +110,8 @@ export const orderStorage = {
     const cleanId = orderId.trim();
     const supabase = getServerSupabaseClient();
 
-    if (!supabase || !isSupabaseConfigured()) {
-      console.error("Supabase not configured in getOrder");
+    if (!supabase) {
+      console.error("Supabase not configured in getOrder", getSupabaseDiagnostics());
       return { order: null, items: [] };
     }
 
@@ -152,8 +154,8 @@ export const orderStorage = {
     const cleanId = orderId.trim();
     const supabase = getServerSupabaseClient();
 
-    if (!supabase || !isSupabaseConfigured()) {
-      console.error("Supabase not configured in updateOrder");
+    if (!supabase) {
+      console.error("Supabase not configured in updateOrder", getSupabaseDiagnostics());
       return null;
     }
 
