@@ -53,8 +53,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ["var(--font-serif)", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-arupala)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        serif: ["var(--font-arupala)", "sans-serif"],
+        arupala: ["var(--font-arupala)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
       },
       boxShadow: {
         'subtle': '0 2px 8px -2px rgba(15, 94, 61, 0.06), 0 1px 4px -1px rgba(0, 0, 0, 0.04)',

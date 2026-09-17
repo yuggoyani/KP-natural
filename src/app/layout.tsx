@@ -6,25 +6,11 @@ export const viewport: Viewport = {
   maximumScale: 5,
   themeColor: "#0F5E3D",
 };
-import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
+import { arupalaGrotesk } from "@/lib/fonts";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CartProvider } from "@/context/CartContext";
-
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-sans",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "KP Natural Dairy Farm | Pure Farm Products & Organic Vermicompost",
@@ -49,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${plusJakarta.variable}`}>
+    <html lang="en" className={arupalaGrotesk.variable}>
       <body className="font-sans antialiased bg-brand-ivory text-brand-text-primary flex flex-col min-h-screen">
         <CartProvider>
           <Navbar />

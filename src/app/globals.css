@@ -21,6 +21,7 @@
     background-color: var(--brand-ivory);
     color: var(--brand-text-primary);
     -webkit-tap-highlight-color: transparent;
+    font-family: var(--font-arupala), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   body {
@@ -28,9 +29,11 @@
     color: var(--brand-text-primary);
     min-height: 100vh;
     min-height: 100dvh;
+    font-family: var(--font-arupala), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     overflow-x: hidden;
     width: 100%;
     position: relative;

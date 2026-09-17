@@ -53,7 +53,7 @@ export function InvoiceTemplate({ order, items }: InvoiceTemplateProps) {
         width: "800px",
         minHeight: "1130px",
         backgroundColor: "#FAF7F0",
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "var(--font-arupala), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}
     >
       {/* OUTER ELEGANT BORDER */}
@@ -426,10 +426,7 @@ export function InvoiceTemplate({ order, items }: InvoiceTemplateProps) {
           </div>
 
           {/* Center: Gold Cursive "Thank You" */}
-          <div
-            className="text-xl text-[#C99738] font-serif italic text-center px-4"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-          >
+          <div className="text-xl text-[#C99738] font-semibold italic text-center px-4">
             Thank You
           </div>
 
