@@ -1,12 +1,8 @@
-export interface ServerProductPack {
-  id: string;
-  name: string;
+import { VermicompostPack } from "@/types/product";
+
+export interface ServerProductPack extends VermicompostPack {
   productName: string;
   productType: string;
-  weightKg: number;
-  price: number;
-  freeCocopeatKg: number;
-  freeDelivery: boolean;
 }
 
 /**
@@ -23,6 +19,7 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     price: 140,
     freeCocopeatKg: 0,
     freeDelivery: false,
+    badge: "Standard Pack",
   },
   "vermicompost-5kg": {
     id: "vermicompost-5kg",
@@ -33,6 +30,7 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     price: 649,
     freeCocopeatKg: 1,
     freeDelivery: true,
+    badge: "+ 1 KG Cocopeat FREE",
   },
   "vermicompost-10kg": {
     id: "vermicompost-10kg",
@@ -43,6 +41,8 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     price: 1199,
     freeCocopeatKg: 2,
     freeDelivery: true,
+    badge: "+ 2 KG Cocopeat FREE",
+    isPopular: true,
   },
   "vermicompost-30kg": {
     id: "vermicompost-30kg",
@@ -53,8 +53,19 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     price: 2199,
     freeCocopeatKg: 6,
     freeDelivery: true,
+    badge: "+ 6 KG Cocopeat FREE",
   },
 };
+
+/**
+ * Single Source of Truth for frontend pack offerings
+ */
+export const PRODUCT_PACKS: VermicompostPack[] = [
+  SERVER_PRODUCT_CATALOG["vermicompost-1kg"],
+  SERVER_PRODUCT_CATALOG["vermicompost-5kg"],
+  SERVER_PRODUCT_CATALOG["vermicompost-10kg"],
+  SERVER_PRODUCT_CATALOG["vermicompost-30kg"],
+];
 
 export interface CalculatedOrderPricing {
   items: {

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VermicompostPack, CartItem } from "@/types/product";
+import { SERVER_PRODUCT_CATALOG } from "@/lib/serverPricing";
 
 interface CartContextType {
   items: CartItem[];
@@ -31,12 +32,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     quantity: number;
   } | null>(null);
 
-  // Hydrate cart from localStorage on mount safely
+  // Hydrate cart from localStorage on mount safely and sync with authoritative catalog
   useEffect(() => {
     try {
       const saved = localStorage.getItem("kp_cart");
       if (saved) {
-        setItems(JSON.parse(saved));
+        const parsed: CartItem[] = JSON.parse(saved);
+        // Automatically sync prices, free bonuses, and delivery settings from authoritative catalog
+        const synced = parsed
+          .map((item) => {
+            const pack = SERVER_PRODUCT_CATALOG[item.packId];
+            if (!pack) return null;
+            return {
+              ...item,
+              packName: pack.name,
+              price: pack.price,
+              weightKg: pack.weightKg,
+              freeCocopeatKg: pack.freeCocopeatKg,
+              freeDelivery: pack.freeDelivery,
+            };
+          })
+          .filter((item): item is CartItem => item !== null);
+        setItems(synced);
       }
     } catch {
       // Ignore localstorage read error

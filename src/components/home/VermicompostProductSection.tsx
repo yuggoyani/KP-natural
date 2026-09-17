@@ -22,45 +22,7 @@ import { VermicompostPack } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 
-const PRODUCT_PACKS: VermicompostPack[] = [
-  {
-    id: "vermicompost-1kg",
-    name: "1 KG Pack",
-    weightKg: 1,
-    price: 140,
-    freeCocopeatKg: 0,
-    freeDelivery: false,
-    badge: "Standard Pack",
-  },
-  {
-    id: "vermicompost-5kg",
-    name: "5 KG Pack",
-    weightKg: 5,
-    price: 649,
-    freeCocopeatKg: 1,
-    freeDelivery: true,
-    badge: "+ 1 KG Cocopeat FREE",
-  },
-  {
-    id: "vermicompost-10kg",
-    name: "10 KG Pack",
-    weightKg: 10,
-    price: 1199,
-    freeCocopeatKg: 2,
-    freeDelivery: true,
-    badge: "+ 2 KG Cocopeat FREE",
-    isPopular: true,
-  },
-  {
-    id: "vermicompost-30kg",
-    name: "30 KG Pack",
-    weightKg: 30,
-    price: 2199,
-    freeCocopeatKg: 6,
-    freeDelivery: true,
-    badge: "+ 6 KG Cocopeat FREE",
-  },
-];
+import { PRODUCT_PACKS } from "@/lib/serverPricing";
 
 const BENEFIT_HIGHLIGHTS = [
   "Supports healthy soil biology and natural aeration",

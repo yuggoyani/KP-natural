@@ -33,7 +33,7 @@ export function DynamicUpiQr({
     const note = encodeURIComponent(`KP Natural Dairy Farm Order ${orderId || ""}`.trim());
 
     // Standard NPCI UPI URI specifications
-    // upi://pay?pa=shailesh03k@okaxis&pn=Shailesh%20Kankotia&am=700.00&cu=INR&tn=KP%20Natural%20Dairy%20Farm%20Order%20KP-20260830-XXXX
+    // upi://pay?pa=shailesh03k@okaxis&pn=Shailesh%20Kankotia&am=649.00&cu=INR&tn=KP%20Natural%20Dairy%20Farm%20Order%2048291
     const generatedUri = `upi://pay?pa=${payeeUpi}&pn=${encodedPayee}&am=${formattedAmount}&cu=INR&tn=${note}`;
     setUpiUri(generatedUri);
 
