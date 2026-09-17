@@ -287,6 +287,8 @@ function PaymentContent() {
     ? `${checkoutData.customerDetails.firstName} ${checkoutData.customerDetails.middleName ? `${checkoutData.customerDetails.middleName} ` : ""}${checkoutData.customerDetails.lastName}`
     : "Valued Customer";
 
+  const subtotal = orderRecord?.subtotal ?? checkoutData?.subtotal ?? orderRecord?.total_amount ?? checkoutData?.totalAmount ?? 0;
+  const deliveryCharge = orderRecord?.delivery_charge ?? checkoutData?.deliveryCharge ?? 0;
   const totalAmount = orderRecord?.total_amount ?? checkoutData?.totalAmount ?? 0;
   const displayOrderId = orderId || orderRecord?.order_id || "KP-PENDING-ORDER";
 
@@ -487,7 +489,7 @@ function PaymentContent() {
               </div>
 
               {/* Dynamic QR Code Presentation Box */}
-              <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 bg-white p-5 sm:p-6 rounded-farm-lg border border-brand-border/80 shadow-xs mb-6">
+              <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 bg-white p-4 sm:p-6 rounded-farm-lg border border-brand-border/80 shadow-xs mb-6">
                 
                 {/* Dynamic QR Code Component */}
                 <DynamicUpiQr
@@ -498,12 +500,12 @@ function PaymentContent() {
                 />
 
                 {/* UPI Details beside Dynamic QR */}
-                <div className="flex flex-col items-start w-full">
+                <div className="flex flex-col items-start w-full min-w-0">
                   <div className="mb-3">
                     <span className="text-xs font-bold uppercase tracking-wider text-brand-text-muted mb-0.5 block">
                       Payable Amount (Auto Filled)
                     </span>
-                    <span className="font-serif font-bold text-3xl sm:text-4xl text-brand-green">
+                    <span className="font-serif font-bold text-2xl sm:text-3xl md:text-4xl text-brand-green">
                       ₹{Number(totalAmount).toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -523,23 +525,23 @@ function PaymentContent() {
                     Official UPI ID
                   </span>
                   <div className="flex items-center gap-2 w-full max-w-sm mb-4">
-                    <div className="flex-1 h-10 px-3 rounded-farm bg-brand-ivory-300/80 border border-brand-border flex items-center font-mono font-semibold text-xs sm:text-sm text-brand-text-primary select-all">
-                      {UPI_ID}
+                    <div className="flex-1 min-w-0 h-11 px-3 rounded-farm bg-brand-ivory-300/80 border border-brand-border flex items-center font-mono font-semibold text-xs sm:text-sm text-brand-text-primary select-all truncate">
+                      <span className="truncate">{UPI_ID}</span>
                     </div>
                     <button
                       type="button"
                       onClick={handleCopyUpi}
-                      className="h-10 px-3 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
+                      className="h-11 px-3.5 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shrink-0 min-w-[76px] active:scale-[0.98]"
                       aria-label="Copy UPI ID"
                     >
                       {copiedUpi ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-300" />
+                          <Check className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
                           <span>Copied</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3.5 h-3.5" />
+                          <Copy className="w-3.5 h-3.5 shrink-0" />
                           <span>Copy</span>
                         </>
                       )}
@@ -559,7 +561,7 @@ function PaymentContent() {
               {/* 4. Payment Instructions (Numbered Flow) */}
               <div className="bg-[#FAF5EA] rounded-farm p-4 sm:p-5 border border-brand-border/70">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-brand-green mb-3 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-brand-green" />
+                  <Sparkles className="w-3.5 h-3.5 text-brand-green shrink-0" />
                   <span>Payment Instructions:</span>
                 </h3>
                 <ol className="space-y-2 text-xs sm:text-sm text-brand-text-secondary list-decimal list-inside leading-relaxed">
@@ -573,12 +575,12 @@ function PaymentContent() {
             </div>
 
             {/* 5. PAYMENT SUBMISSION FORM */}
-            <div className="rounded-farm-xl bg-[#FCF9F2] p-6 sm:p-8 border border-brand-border shadow-subtle">
+            <div className="rounded-farm-xl bg-[#FCF9F2] p-5 sm:p-8 border border-brand-border shadow-subtle">
               <div className="pb-4 mb-6 border-b border-brand-border/70">
-                <h2 className="font-serif text-xl font-bold text-brand-text-primary">
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-brand-text-primary">
                   Submit Payment Verification Details
                 </h2>
-                <p className="text-xs text-brand-text-secondary mt-0.5">
+                <p className="text-xs sm:text-sm text-brand-text-secondary mt-0.5">
                   Enter the transaction reference from your UPI app so our farm team can verify your payment.
                 </p>
               </div>
@@ -599,7 +601,7 @@ function PaymentContent() {
                       if (formError) setFormError(null);
                     }}
                     placeholder="e.g. 423589123456 or Bank Ref ID"
-                    className="h-12 px-4 rounded-farm bg-white border border-brand-border font-mono text-sm text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green"
+                    className="h-12 px-4 rounded-farm bg-white border border-brand-border font-mono text-base sm:text-sm text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green"
                     required
                   />
                   <span className="text-[11px] text-brand-text-muted mt-1">
@@ -626,9 +628,9 @@ function PaymentContent() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full border-2 border-dashed border-brand-border rounded-farm-lg p-5 flex flex-col items-center justify-center gap-2 hover:border-brand-green/50 hover:bg-brand-green-50/30 transition-colors cursor-pointer"
+                      className="w-full min-h-[56px] border-2 border-dashed border-brand-border rounded-farm-lg p-4 sm:p-5 flex flex-col items-center justify-center gap-1.5 hover:border-brand-green/50 hover:bg-brand-green-50/30 transition-colors cursor-pointer text-center"
                     >
-                      <Upload className="w-5 h-5 text-brand-green" />
+                      <Upload className="w-5 h-5 text-brand-green shrink-0" />
                       <span className="text-xs font-semibold text-brand-text-primary">
                         Click to upload payment screenshot
                       </span>
@@ -638,7 +640,7 @@ function PaymentContent() {
                     </button>
                   ) : (
                     <div className="relative p-3 rounded-farm bg-white border border-brand-border flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="flex items-center gap-3 overflow-hidden min-w-0">
                         <div className="relative w-12 h-12 rounded overflow-hidden border border-brand-border shrink-0 bg-brand-ivory-300">
                           <Image
                             src={screenshotPreview}
@@ -647,7 +649,7 @@ function PaymentContent() {
                             className="object-cover"
                           />
                         </div>
-                        <div className="flex flex-col text-xs truncate">
+                        <div className="flex flex-col text-xs truncate min-w-0">
                           <span className="font-semibold text-brand-text-primary truncate">
                             {screenshotFile?.name}
                           </span>
@@ -660,8 +662,9 @@ function PaymentContent() {
                       <button
                         type="button"
                         onClick={handleRemoveScreenshot}
-                        className="p-1.5 rounded-full hover:bg-rose-50 text-rose-600 transition-colors"
+                        className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-rose-50 text-rose-600 transition-colors shrink-0"
                         title="Remove screenshot"
+                        aria-label="Remove screenshot"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -695,7 +698,7 @@ function PaymentContent() {
                       <ArrowRight className="w-5 h-5" />
                     )
                   }
-                  className="w-full py-4 text-base shadow-subtle hover:shadow-premium"
+                  className="w-full min-h-[52px] py-4 text-base shadow-subtle hover:shadow-premium"
                 >
                   {isSubmitting ? "Submitting Payment Details..." : "Submit Payment Details"}
                 </Button>
@@ -705,7 +708,7 @@ function PaymentContent() {
           </div>
 
           {/* RIGHT: ORDER SUMMARY CARD */}
-          <div className="lg:col-span-5 xl:col-span-4 sticky top-24 text-left">
+          <div className="w-full lg:col-span-5 xl:col-span-4 relative lg:sticky lg:top-24 self-start text-left">
             <div className="rounded-farm-xl bg-[#FCF9F2] p-6 sm:p-7 border border-brand-border/90 shadow-elevated">
               <div className="flex items-center justify-between pb-3 mb-4 border-b border-brand-border/70">
                 <h2 className="font-serif font-bold text-xl text-brand-text-primary">
@@ -765,7 +768,7 @@ function PaymentContent() {
                 <div className="flex items-center justify-between">
                   <span>Subtotal:</span>
                   <span className="font-semibold text-brand-text-primary">
-                    ₹{Number(totalAmount).toLocaleString("en-IN")}
+                    ₹{Number(subtotal).toLocaleString("en-IN")}
                   </span>
                 </div>
 
@@ -781,7 +784,9 @@ function PaymentContent() {
 
                 <div className="flex items-center justify-between">
                   <span>Delivery:</span>
-                  <span className="text-brand-green font-semibold">FREE DELIVERY</span>
+                  <span className={Number(deliveryCharge) > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
+                    {Number(deliveryCharge) > 0 ? `₹${Number(deliveryCharge).toLocaleString("en-IN")}` : "FREE DELIVERY"}
+                  </span>
                 </div>
 
                 <div className="pt-3 border-t border-brand-border flex items-center justify-between text-sm">

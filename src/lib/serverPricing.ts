@@ -30,7 +30,7 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Vermicompost Fertiliser",
     productType: "VERMICOMPOST",
     weightKg: 5,
-    price: 700,
+    price: 649,
     freeCocopeatKg: 1,
     freeDelivery: true,
   },
@@ -40,7 +40,7 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Vermicompost Fertiliser",
     productType: "VERMICOMPOST",
     weightKg: 10,
-    price: 1400,
+    price: 1199,
     freeCocopeatKg: 2,
     freeDelivery: true,
   },
@@ -50,7 +50,7 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Vermicompost Fertiliser",
     productType: "VERMICOMPOST",
     weightKg: 30,
-    price: 4200,
+    price: 2199,
     freeCocopeatKg: 6,
     freeDelivery: true,
   },
@@ -115,7 +115,9 @@ export function calculateServerOrderPricing(
     };
   });
 
-  const deliveryCharge = 0; // Current farm promotion: 100% free delivery across Gujarat
+  // Delivery Charge Rule: ₹60 only for 1 KG package orders; free delivery for 5 KG, 10 KG, and 30 KG orders
+  const hasOnlyOneKg = calculatedItems.every((item) => item.packId === "vermicompost-1kg");
+  const deliveryCharge = hasOnlyOneKg ? 60 : 0;
   const totalAmount = subtotal + deliveryCharge;
 
   return {

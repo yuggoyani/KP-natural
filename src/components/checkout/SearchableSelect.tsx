@@ -95,24 +95,24 @@ export function SearchableSelect({
 
       {/* Dropdown Menu */}
       {isOpen && !disabled && (
-        <div className="absolute top-[calc(100%+4px)] left-0 right-0 z-50 bg-[#FCF9F2] border border-brand-border rounded-farm-lg shadow-elevated overflow-hidden animate-fade-in max-h-64 flex flex-col">
+        <div className="absolute top-[calc(100%+4px)] left-0 right-0 z-50 bg-[#FCF9F2] border border-brand-border rounded-farm-lg shadow-elevated overflow-hidden animate-fade-in max-h-60 sm:max-h-64 flex flex-col">
           {/* Search Input Box */}
-          <div className="p-2 border-b border-brand-border/60 bg-white">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-brand-ivory-300/60 border border-brand-border/50">
+          <div className="p-2 sm:p-2.5 border-b border-brand-border/60 bg-white">
+            <div className="flex items-center gap-2 px-3 py-2 rounded bg-brand-ivory-300/60 border border-brand-border/50">
               <Search className="w-4 h-4 text-brand-text-muted shrink-0" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="w-full text-xs bg-transparent focus:outline-none text-brand-text-primary"
+                className="w-full text-sm sm:text-xs bg-transparent focus:outline-none text-brand-text-primary"
                 autoFocus
               />
             </div>
           </div>
 
           {/* Options List */}
-          <div className="overflow-y-auto flex-1 p-1" role="listbox">
+          <div className="overflow-y-auto flex-1 p-1 touch-scroll" role="listbox">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {
                 const isSelected = opt.value === value;
@@ -126,10 +126,10 @@ export function SearchableSelect({
                       setIsOpen(false);
                     }}
                     className={cn(
-                      "px-3 py-2 rounded text-xs sm:text-sm flex items-center justify-between cursor-pointer transition-colors",
+                      "px-3 py-2.5 rounded text-xs sm:text-sm flex items-center justify-between cursor-pointer transition-colors min-h-[40px]",
                       isSelected
                         ? "bg-brand-green-50 text-brand-green font-semibold"
-                        : "hover:bg-brand-ivory-300/80 text-brand-text-primary"
+                        : "hover:bg-brand-ivory-300/80 active:bg-brand-ivory-300 text-brand-text-primary"
                     )}
                   >
                     <div className="flex flex-col">

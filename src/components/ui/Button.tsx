@@ -42,9 +42,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: "text-xs px-3.5 py-1.5 rounded-lg gap-1.5",
-      md: "text-sm sm:text-base px-5 py-2.5 rounded-farm gap-2",
-      lg: "text-base sm:text-lg px-7 py-3.5 rounded-farm gap-2.5 font-semibold",
+      sm: "text-xs px-3.5 py-1.5 min-h-[36px] rounded-lg gap-1.5",
+      md: "text-sm sm:text-base px-5 py-2.5 min-h-[44px] rounded-farm gap-2",
+      lg: "text-base sm:text-lg px-7 py-3.5 min-h-[48px] rounded-farm gap-2.5 font-semibold",
     };
 
     const classes = cn(baseStyles, variants[variant], sizes[size], className);

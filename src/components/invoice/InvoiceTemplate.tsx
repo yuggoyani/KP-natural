@@ -326,6 +326,12 @@ export function InvoiceTemplate({ order, items }: InvoiceTemplateProps) {
                   <span className="font-semibold">₹{rawSubtotal.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex justify-between text-[#5A6D63]">
+                  <span>Delivery Charges:</span>
+                  <span className={Number(order.delivery_charge || 0) > 0 ? "font-semibold text-[#11251B]" : "text-[#0F5E3D] font-medium"}>
+                    {Number(order.delivery_charge || 0) > 0 ? `₹${Number(order.delivery_charge).toLocaleString("en-IN")}` : "FREE"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[#5A6D63]">
                   <span>Product Discounts:</span>
                   <span>₹0</span>
                 </div>

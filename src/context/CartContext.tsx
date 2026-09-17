@@ -7,6 +7,8 @@ interface CartContextType {
   items: CartItem[];
   totalItems: number;
   totalAmount: number;
+  deliveryCharge: number;
+  finalPayable: number;
   totalFreeCocopeat: number;
   totalWeightKg: number;
   isHydrated: boolean;
@@ -127,12 +129,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     0
   );
 
+  // Delivery Charge Rule: ₹60 only for 1 KG package orders; free delivery for 5 KG, 10 KG, and 30 KG
+  const hasOnlyOneKg = items.length > 0 && items.every((item) => item.packId === "vermicompost-1kg");
+  const deliveryCharge = hasOnlyOneKg ? 60 : 0;
+  const finalPayable = totalAmount + deliveryCharge;
+
   return (
     <CartContext.Provider
       value={{
         items,
         totalItems,
         totalAmount,
+        deliveryCharge,
+        finalPayable,
         totalFreeCocopeat,
         totalWeightKg,
         isHydrated,

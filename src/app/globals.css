@@ -20,16 +20,20 @@
     scroll-behavior: smooth;
     background-color: var(--brand-ivory);
     color: var(--brand-text-primary);
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     background-color: var(--brand-ivory);
     color: var(--brand-text-primary);
     min-height: 100vh;
+    min-height: 100dvh;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    width: 100%;
+    position: relative;
   }
 
   ::selection {
@@ -42,6 +46,17 @@
     outline: 2px solid #0F5E3D;
     outline-offset: 2px;
   }
+
+  /* Touch device optimization */
+  input, textarea, select, button {
+    font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+  }
+
+  @media (min-width: 640px) {
+    input, textarea, select, button {
+      font-size: inherit;
+    }
+  }
 }
 
 @layer utilities {
@@ -51,5 +66,11 @@
   .bg-subtle-pattern {
     background-image: radial-gradient(rgba(15, 94, 61, 0.04) 1px, transparent 1px);
     background-size: 24px 24px;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
   }
 }

@@ -655,7 +655,9 @@ export default function AdminOrderDetailPage({
 
                 <div className="flex items-center justify-between">
                   <span>Delivery Charge:</span>
-                  <span className="text-brand-green font-semibold">FREE DELIVERY</span>
+                  <span className={Number(order.delivery_charge || 0) > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
+                    {Number(order.delivery_charge || 0) > 0 ? `₹${Number(order.delivery_charge).toLocaleString("en-IN")}` : "FREE DELIVERY"}
+                  </span>
                 </div>
 
                 <div className="pt-3 border-t border-brand-border flex items-center justify-between text-base">

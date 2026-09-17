@@ -34,6 +34,8 @@ export default function CheckoutPage() {
     items,
     totalItems,
     totalAmount,
+    deliveryCharge,
+    finalPayable,
     totalFreeCocopeat,
     totalWeightKg,
     isHydrated,
@@ -285,9 +287,9 @@ export default function CheckoutPage() {
         customerDetails,
         deliveryAddress,
         cartItems: items,
-        subtotal: result.order?.subtotal || totalAmount,
-        deliveryCharge: result.order?.delivery_charge || 0,
-        totalAmount: result.order?.total_amount || totalAmount,
+        subtotal: result.order?.subtotal ?? totalAmount,
+        deliveryCharge: result.order?.delivery_charge ?? deliveryCharge,
+        totalAmount: result.order?.total_amount ?? finalPayable,
         totalFreeCocopeat,
         createdAt: Date.now(),
       };
@@ -360,43 +362,43 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="py-8 sm:py-14 lg:py-16 bg-brand-ivory min-h-[85vh]">
+    <div className="py-6 sm:py-10 lg:py-16 bg-brand-ivory min-h-[85vh]">
       <Container size="lg">
         {/* CHECKOUT PROGRESS INDICATOR */}
-        <div className="mb-8 sm:mb-10">
+        <div className="mb-6 sm:mb-8">
           <CheckoutProgress currentStep={2} />
         </div>
 
         {/* PAGE HEADER */}
-        <div className="flex flex-col items-start mb-8">
+        <div className="flex flex-col items-start mb-6 sm:mb-8 text-left">
           <Link
             href="/cart"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-brand-text-secondary hover:text-brand-green transition-colors uppercase tracking-wider mb-3"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-brand-text-secondary hover:text-brand-green transition-colors uppercase tracking-wider mb-2 sm:mb-3 py-1"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Cart</span>
           </Link>
 
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-brand-text-primary tracking-tight">
+          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-brand-text-primary tracking-tight">
             Customer Details & Delivery
           </h1>
-          <p className="text-sm text-brand-text-secondary mt-1">
+          <p className="text-xs sm:text-sm text-brand-text-secondary mt-1">
             Please enter your contact information and Gujarat delivery destination.
           </p>
         </div>
 
         {/* MAIN 2-COLUMN CHECKOUT GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-start">
           
           {/* LEFT: FORM (Customer Details + Delivery Address) */}
-          <div className="lg:col-span-7 xl:col-span-8">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-8" noValidate>
+          <div className="lg:col-span-7 xl:col-span-8 w-full">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-8" noValidate>
               
               {/* 1. CUSTOMER INFORMATION SECTION */}
-              <div className="rounded-farm-xl bg-[#FCF9F2] p-6 sm:p-8 border border-brand-border shadow-subtle">
-                <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-brand-border/70 text-brand-text-primary">
-                  <User className="w-5 h-5 text-brand-green" />
-                  <h2 className="font-serif text-xl font-bold">
+              <div className="rounded-farm-xl bg-[#FCF9F2] p-4 sm:p-7 lg:p-8 border border-brand-border shadow-subtle text-left">
+                <div className="flex items-center gap-2.5 pb-3.5 sm:pb-4 mb-5 sm:mb-6 border-b border-brand-border/70 text-brand-text-primary">
+                  <User className="w-5 h-5 text-brand-green shrink-0" />
+                  <h2 className="font-serif text-lg sm:text-xl font-bold">
                     1. Contact Information
                   </h2>
                 </div>
@@ -531,18 +533,18 @@ export default function CheckoutPage() {
               </div>
 
               {/* 2. GUJARAT DELIVERY ADDRESS SECTION */}
-              <div className="rounded-farm-xl bg-[#FCF9F2] p-6 sm:p-8 border border-brand-border shadow-subtle">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-brand-border/70">
+              <div className="rounded-farm-xl bg-[#FCF9F2] p-4 sm:p-7 lg:p-8 border border-brand-border shadow-subtle text-left">
+                <div className="flex items-center justify-between pb-3.5 sm:pb-4 mb-4 sm:mb-5 border-b border-brand-border/70">
                   <div className="flex items-center gap-2.5 text-brand-text-primary">
-                    <Home className="w-5 h-5 text-brand-green" />
-                    <h2 className="font-serif text-xl font-bold">
+                    <Home className="w-5 h-5 text-brand-green shrink-0" />
+                    <h2 className="font-serif text-lg sm:text-xl font-bold">
                       2. Gujarat Delivery Address
                     </h2>
                   </div>
                 </div>
 
                 {/* Gujarat Delivery Notice Banner */}
-                <div className="mb-6 p-4 rounded-farm bg-brand-green-50 border border-brand-green/20 flex items-center gap-3">
+                <div className="mb-5 sm:mb-6 p-3.5 sm:p-4 rounded-farm bg-brand-green-50 border border-brand-green/20 flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-brand-green shrink-0" />
                   <div className="text-xs text-brand-text-secondary leading-snug">
                     <strong className="text-brand-green block sm:inline">
@@ -553,21 +555,21 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* State Locked to Gujarat */}
-                <div className="mb-5 flex flex-col text-left">
+                <div className="mb-4 sm:mb-5 flex flex-col text-left">
                   <label className="text-xs font-semibold uppercase tracking-wider text-brand-text-primary mb-1.5 flex items-center justify-between">
                     <span>State</span>
-                    <span className="text-[11px] text-brand-green font-medium">Verified Delivery Region</span>
+                    <span className="text-[10px] sm:text-[11px] text-brand-green font-medium">Verified Delivery Region</span>
                   </label>
                   <div className="h-12 px-4 rounded-farm bg-brand-ivory-300/80 border border-brand-border flex items-center justify-between text-sm text-brand-text-primary font-semibold select-none">
                     <span>Gujarat</span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-brand-green text-brand-ivory uppercase tracking-wider">
+                    <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded bg-brand-green text-brand-ivory uppercase tracking-wider">
                       Fixed
                     </span>
                   </div>
                 </div>
 
                 {/* District & Village/Area Selectors */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 sm:mb-5">
                   {/* District / City Dropdown */}
                   <SearchableSelect
                     id="districtOrCity"
@@ -599,7 +601,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* PIN Code & Address Lines */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 sm:mb-5">
                   {/* PIN Code */}
                   <div className="flex flex-col text-left">
                     <label htmlFor="pinCode" className="text-xs font-semibold uppercase tracking-wider text-brand-text-primary mb-1.5 flex items-center gap-1">
@@ -669,14 +671,14 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Supabase Architecture Note */}
-                <div className="mt-5 pt-4 border-t border-brand-border/50 text-[11px] text-brand-text-muted">
+                <div className="mt-4 sm:mt-5 pt-3.5 sm:pt-4 border-t border-brand-border/50 text-[11px] text-brand-text-muted">
                   📍 Verified Gujarat delivery locations. Additional PIN codes & areas are dynamically supported.
                 </div>
               </div>
 
               {/* Submission Error Banner */}
               {submitError && (
-                <div className="p-4 rounded-farm bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start gap-3 text-left">
+                <div className="p-3.5 sm:p-4 rounded-farm bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2.5 sm:gap-3 text-left">
                   <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                   <div>
                     <strong className="block font-semibold">Unable to proceed:</strong>
@@ -686,7 +688,7 @@ export default function CheckoutPage() {
               )}
 
               {/* Submit CTA Button */}
-              <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 <Button
                   variant="primary"
                   size="lg"
@@ -699,14 +701,14 @@ export default function CheckoutPage() {
                       <ArrowRight className="w-5 h-5" />
                     )
                   }
-                  className="w-full sm:w-auto py-4 px-10 text-base shadow-subtle hover:shadow-premium"
+                  className="w-full sm:w-auto py-3.5 px-8 text-base shadow-subtle hover:shadow-premium min-h-[50px] justify-center text-center"
                 >
                   {isSubmitting ? "Creating Order..." : "Continue to Payment"}
                 </Button>
 
                 <Link
                   href="/cart"
-                  className="text-xs sm:text-sm text-brand-text-secondary hover:text-brand-green transition-colors py-2"
+                  className="text-xs sm:text-sm text-brand-text-secondary hover:text-brand-green transition-colors py-2 text-center"
                 >
                   Return to edit cart
                 </Link>
@@ -716,10 +718,10 @@ export default function CheckoutPage() {
           </div>
 
           {/* RIGHT: STICKY LIVE ORDER SUMMARY */}
-          <div className="lg:col-span-5 xl:col-span-4 sticky top-24">
-            <div className="rounded-farm-xl bg-[#FCF9F2] p-6 sm:p-7 border border-brand-border/90 shadow-elevated">
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-brand-border/70">
-                <h2 className="font-serif font-bold text-xl text-brand-text-primary">
+          <div className="w-full lg:col-span-5 xl:col-span-4 relative lg:sticky lg:top-24 self-start">
+            <div className="rounded-farm-xl bg-[#FCF9F2] p-4 sm:p-6 lg:p-7 border border-brand-border/90 shadow-elevated text-left">
+              <div className="flex items-center justify-between pb-2.5 mb-3.5 border-b border-brand-border/70">
+                <h2 className="font-serif font-bold text-lg sm:text-xl text-brand-text-primary">
                   Order Summary
                 </h2>
                 <span className="text-xs text-brand-green font-semibold">
@@ -728,11 +730,11 @@ export default function CheckoutPage() {
               </div>
 
               {/* Cart Items List */}
-              <div className="divide-y divide-brand-border/50 max-h-64 overflow-y-auto pr-1 mb-5">
+              <div className="divide-y divide-brand-border/50 max-h-60 sm:max-h-64 overflow-y-auto pr-1 mb-4 sm:mb-5 touch-scroll">
                 {items.map((item) => (
-                  <div key={item.packId} className="py-3 flex items-center justify-between gap-3 text-left">
+                  <div key={item.packId} className="py-2.5 sm:py-3 flex items-center justify-between gap-3 text-left">
                     <div className="flex items-center gap-3">
-                      <div className="relative w-12 h-14 rounded overflow-hidden border border-brand-border bg-white shrink-0">
+                      <div className="relative w-11 h-13 sm:w-12 sm:h-14 rounded overflow-hidden border border-brand-border bg-white shrink-0">
                         <Image
                           src="/images/vermicompost-label.png"
                           alt={item.packName}
@@ -743,22 +745,22 @@ export default function CheckoutPage() {
                         />
                       </div>
                       <div>
-                        <h4 className="font-serif font-bold text-sm text-brand-text-primary leading-tight">
+                        <h4 className="font-serif font-bold text-xs sm:text-sm text-brand-text-primary leading-tight">
                           {item.packName}
                         </h4>
-                        <span className="text-xs text-brand-text-muted block">
+                        <span className="text-[11px] sm:text-xs text-brand-text-muted block">
                           Qty: {item.quantity} × ₹{item.price.toLocaleString("en-IN")}
                         </span>
                         {item.freeCocopeatKg > 0 && (
                           <span className="text-[10px] font-semibold text-brand-green flex items-center gap-1 mt-0.5">
-                            <Gift className="w-3 h-3" />
+                            <Gift className="w-3 h-3 shrink-0" />
                             +{item.freeCocopeatKg * item.quantity} KG Cocopeat FREE
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <span className="font-serif font-bold text-sm text-brand-text-primary shrink-0">
+                    <span className="font-serif font-bold text-xs sm:text-sm text-brand-text-primary shrink-0">
                       ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                     </span>
                   </div>
@@ -766,7 +768,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Price Details */}
-              <div className="space-y-3 pt-3 border-t border-brand-border text-sm text-brand-text-secondary mb-6">
+              <div className="space-y-2.5 pt-3 border-t border-brand-border text-xs sm:text-sm text-brand-text-secondary mb-5 sm:mb-6">
                 <div className="flex items-center justify-between">
                   <span>Subtotal:</span>
                   <span className="font-semibold text-brand-text-primary">
@@ -777,30 +779,32 @@ export default function CheckoutPage() {
                 {totalFreeCocopeat > 0 && (
                   <div className="flex items-center justify-between text-brand-green font-medium">
                     <span className="flex items-center gap-1.5">
-                      <Gift className="w-3.5 h-3.5" />
+                      <Gift className="w-3.5 h-3.5 shrink-0" />
                       Free Cocopeat Bonus:
                     </span>
-                    <span>+{totalFreeCocopeat} KG FREE</span>
+                    <span className="font-semibold">+{totalFreeCocopeat} KG FREE</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
                   <span>Delivery Charges:</span>
-                  <span className="text-brand-green font-semibold">FREE DELIVERY</span>
+                  <span className={deliveryCharge > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
+                    {deliveryCharge > 0 ? `₹${deliveryCharge.toLocaleString("en-IN")}` : "FREE DELIVERY"}
+                  </span>
                 </div>
 
-                <div className="pt-4 border-t border-brand-border flex items-center justify-between">
-                  <span className="font-serif font-bold text-lg text-brand-text-primary">
+                <div className="pt-3 sm:pt-4 border-t border-brand-border flex items-center justify-between">
+                  <span className="font-serif font-bold text-base sm:text-lg text-brand-text-primary">
                     Final Payable:
                   </span>
-                  <span className="font-serif font-bold text-2xl text-brand-green">
-                    ₹{totalAmount.toLocaleString("en-IN")}
+                  <span className="font-serif font-bold text-xl sm:text-2xl text-brand-green">
+                    ₹{finalPayable.toLocaleString("en-IN")}
                   </span>
                 </div>
               </div>
 
               {/* Trust Guarantees */}
-              <div className="pt-4 border-t border-brand-border/60 flex flex-col gap-2 text-xs text-brand-text-muted">
+              <div className="pt-3.5 sm:pt-4 border-t border-brand-border/60 flex flex-col gap-1.5 text-[11px] sm:text-xs text-brand-text-muted">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-brand-green shrink-0" />
                   <span>100% Authentic KP Natural Farm Sourcing</span>

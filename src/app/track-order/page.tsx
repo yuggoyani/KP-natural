@@ -156,13 +156,13 @@ function TrackOrderContent() {
 
         {/* LOOKUP SEARCH FORM (WHEN NO ORDER TRACKED) */}
         {!trackedOrder && (
-          <div className="rounded-farm-xl bg-[#FCF9F2] p-6 sm:p-9 border border-brand-border shadow-elevated mb-10">
+          <div className="rounded-farm-xl bg-[#FCF9F2] p-5 sm:p-9 border border-brand-border shadow-elevated mb-10">
             <form onSubmit={handleTrackSubmit} className="space-y-5" noValidate>
               {/* Order ID Input */}
               <div className="flex flex-col text-left">
                 <label
                   htmlFor="orderId"
-                  className="text-xs font-bold uppercase tracking-wider text-brand-text-primary mb-1.5 flex items-center justify-between"
+                  className="text-xs font-bold uppercase tracking-wider text-brand-text-primary mb-1.5 flex flex-wrap items-center justify-between gap-1"
                 >
                   <span>Order Reference ID</span>
                   <span className="text-[11px] text-brand-text-muted font-normal">
@@ -178,7 +178,7 @@ function TrackOrderContent() {
                     if (error) setError(null);
                   }}
                   placeholder="e.g. 48291"
-                  className="h-12 px-4 rounded-farm bg-white border border-brand-border font-mono text-sm text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green"
+                  className="h-12 px-4 rounded-farm bg-white border border-brand-border font-mono text-base sm:text-sm text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green"
                   required
                 />
               </div>
@@ -187,7 +187,7 @@ function TrackOrderContent() {
               <div className="flex flex-col text-left">
                 <label
                   htmlFor="mobileNumber"
-                  className="text-xs font-bold uppercase tracking-wider text-brand-text-primary mb-1.5 flex items-center justify-between"
+                  className="text-xs font-bold uppercase tracking-wider text-brand-text-primary mb-1.5 flex flex-wrap items-center justify-between gap-1"
                 >
                   <span>Registered Mobile Number</span>
                   <span className="text-[11px] text-brand-text-muted font-normal">
@@ -208,7 +208,7 @@ function TrackOrderContent() {
                     }}
                     placeholder="98765 43210"
                     maxLength={10}
-                    className="w-full h-12 pl-12 pr-4 rounded-farm bg-white border border-brand-border font-mono text-sm text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green"
+                    className="w-full h-12 pl-12 pr-4 rounded-farm bg-white border border-brand-border font-mono text-base sm:text-sm text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green"
                     required
                   />
                 </div>
@@ -235,14 +235,14 @@ function TrackOrderContent() {
                     <Search className="w-4 h-4" />
                   )
                 }
-                className="w-full py-4 text-base shadow-subtle hover:shadow-premium"
+                className="w-full min-h-[52px] py-4 text-base shadow-subtle hover:shadow-premium"
               >
                 {isLoading ? "Looking up Order..." : "Track My Order"}
               </Button>
             </form>
 
-            <div className="mt-6 pt-5 border-t border-brand-border/60 flex items-center justify-center gap-2 text-[11px] text-brand-text-muted">
-              <ShieldCheck className="w-3.5 h-3.5 text-brand-green" />
+            <div className="mt-6 pt-5 border-t border-brand-border/60 flex items-center justify-center gap-2 text-[11px] text-brand-text-muted text-center">
+              <ShieldCheck className="w-3.5 h-3.5 text-brand-green shrink-0" />
               <span>Secure encrypted customer verification. Your privacy is strictly protected.</span>
             </div>
           </div>
@@ -367,7 +367,7 @@ function TrackOrderContent() {
 
                   <a
                     href="tel:9904010544"
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs sm:text-sm font-bold shadow-subtle transition-all duration-200 hover:scale-[1.02] shrink-0"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs sm:text-sm font-bold shadow-subtle transition-all duration-200 hover:scale-[1.02] shrink-0 w-full sm:w-auto min-h-[44px]"
                     title="Call Customer Care directly"
                   >
                     <Phone className="w-4 h-4 text-brand-ivory" />
@@ -516,7 +516,9 @@ function TrackOrderContent() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Doorstep Delivery:</span>
-                    <span className="text-brand-green font-semibold">FREE DELIVERY</span>
+                    <span className={Number(trackedOrder.delivery_charge || 0) > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
+                      {Number(trackedOrder.delivery_charge || 0) > 0 ? `₹${Number(trackedOrder.delivery_charge).toLocaleString("en-IN")}` : "FREE DELIVERY"}
+                    </span>
                   </div>
                   <div className="pt-2 border-t border-brand-border flex items-center justify-between text-sm">
                     <span className="font-serif font-bold text-brand-text-primary">Total Amount:</span>
@@ -729,7 +731,7 @@ function PaymentStatusInfo({
             type="button"
             onClick={onDownloadInvoice}
             disabled={isDownloadingInvoice}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs font-bold shadow-subtle hover:shadow-premium transition-all duration-200 hover:scale-[1.02] shrink-0 w-full sm:w-auto justify-center"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs font-bold shadow-subtle hover:shadow-premium transition-all duration-200 hover:scale-[1.02] shrink-0 w-full sm:w-auto justify-center min-h-[44px]"
           >
             {isDownloadingInvoice ? (
               <>
@@ -795,7 +797,7 @@ function PaymentStatusInfo({
 
           <a
             href="tel:9904010544"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs font-bold shadow-subtle transition-all duration-200 hover:scale-[1.02] shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-farm bg-brand-green hover:bg-[#0A472E] text-brand-ivory text-xs font-bold shadow-subtle transition-all duration-200 hover:scale-[1.02] shrink-0 w-full sm:w-auto min-h-[44px]"
             title="Call Customer Care directly"
           >
             <Phone className="w-3.5 h-3.5 text-brand-ivory" />
