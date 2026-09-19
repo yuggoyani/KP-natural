@@ -64,6 +64,7 @@ export async function sendOtpSms({ mobileNumber, otp }: SendSmsOptions): Promise
         payload.flash = 0;
       }
 
+      // Explicit 8-second timeout using AbortSignal.timeout(8000)
       const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
         method: "POST",
         headers: {
@@ -71,37 +72,94 @@ export async function sendOtpSms({ mobileNumber, otp }: SendSmsOptions): Promise
           Authorization: apiKey,
           "Content-Type": "application/json",
           Accept: "application/json",
+          "User-Agent": "Mozilla/5.0 (compatible; KPNaturalFarm/1.0; +https://kpnaturaldairyfarm.vercel.app)",
         },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(8000),
       });
 
-      const data = await response.json();
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (parseErr) {
+        console.error(
+          `[SMS Gateway] Fast2SMS returned HTTP ${response.status} with non-JSON response for destination ...${last10.slice(-4)}`
+        );
+        return {
+          success: false,
+          provider: "fast2sms",
+          error: "OTP service is temporarily unavailable. Please try again in a few minutes.",
+        };
+      }
+
       const isSuccess =
-        data.return === true ||
-        data.status_code === 200 ||
-        (Array.isArray(data.message) && data.message[0]?.toLowerCase().includes("success"));
+        data &&
+        (data.return === true ||
+          data.status_code === 200 ||
+          (Array.isArray(data.message) && data.message[0]?.toLowerCase().includes("success")));
 
       if (isSuccess) {
         return {
           success: true,
           provider: "fast2sms",
-          messageId: data.request_id || "fast2sms_sent",
+          messageId: data?.request_id || "fast2sms_sent",
         };
       }
 
-      const errMsg = Array.isArray(data.message) ? data.message.join(", ") : (data.message || "Fast2SMS dispatch failed");
-      console.error("[SMS Gateway] Fast2SMS Quick SMS dispatch returned error:", errMsg);
+      // Fast2SMS returned a structured failure (return: false)
+      const statusCode = data?.status_code || response.status;
+      const errMsg = Array.isArray(data?.message)
+        ? data.message.join(", ")
+        : (data?.message || "Provider rejection");
+
+      console.error(
+        `[SMS Gateway] Fast2SMS Quick SMS rejected (HTTP ${response.status}, status_code ${statusCode}): ${errMsg} for destination ...${last10.slice(-4)}`
+      );
+
       return {
         success: false,
         provider: "fast2sms",
         error: "Unable to send OTP right now. Please check your mobile number and try again.",
       };
     } catch (err: any) {
-      console.error("[SMS Gateway] Fast2SMS network/exception:", err?.message || err);
+      // 1. Fetch Timeout / AbortError
+      if (err.name === "TimeoutError" || err.name === "AbortError" || err.message?.toLowerCase().includes("timeout")) {
+        console.error(
+          `[SMS Gateway] Fast2SMS request timed out after 8000ms for destination ...${last10.slice(-4)}`
+        );
+        return {
+          success: false,
+          provider: "fast2sms",
+          error: "OTP service is temporarily unavailable. Please try again in a few minutes.",
+        };
+      }
+
+      // 2. Network / TCP Connection Failure (ETIMEDOUT, ECONNRESET, UND_ERR_CONNECT_TIMEOUT)
+      const isConnectionFailure =
+        err.code === "ETIMEDOUT" ||
+        err.code === "ECONNRESET" ||
+        err.cause?.code === "UND_ERR_CONNECT_TIMEOUT" ||
+        err.message?.toLowerCase().includes("fetch failed");
+
+      if (isConnectionFailure) {
+        console.error(
+          `[SMS Gateway] Fast2SMS connection failed (${err.code || err.cause?.code || err.name}) for destination ...${last10.slice(-4)}`
+        );
+        return {
+          success: false,
+          provider: "fast2sms",
+          error: "OTP service is temporarily unavailable. Please try again in a few minutes.",
+        };
+      }
+
+      // 3. Unexpected exception
+      console.error(
+        `[SMS Gateway] Fast2SMS unexpected exception: ${err.name} - ${err.message}`
+      );
       return {
         success: false,
         provider: "fast2sms",
-        error: "Unable to deliver OTP SMS. Please try again in a few moments.",
+        error: "OTP service is temporarily unavailable. Please try again in a few minutes.",
       };
     }
   }

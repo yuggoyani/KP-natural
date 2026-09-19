@@ -103,7 +103,7 @@ export function PhoneOtpVerification({
         otpInputsRef.current[0]?.focus();
       }, 100);
     } catch (err) {
-      setErrorMessage("Network error sending OTP. Please check your connection.");
+      setErrorMessage("OTP service is temporarily unavailable. Please try again in a few minutes.");
     } finally {
       setIsSending(false);
     }
