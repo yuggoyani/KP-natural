@@ -156,6 +156,17 @@ export async function requestPhoneOtp(mobileNumber: string, purpose: "checkout" 
     otp,
   });
 
+  if (!smsResult.success) {
+    // Invalidate the attempt since SMS could not be dispatched
+    const remaining = (memoryStore.get(cleanPhone) || []).filter((r) => r.otpHash !== otpHash);
+    memoryStore.set(cleanPhone, remaining);
+
+    return {
+      success: false,
+      error: smsResult.error || "Unable to send OTP right now. Please try again.",
+    };
+  }
+
   return {
     success: true,
     message: `6-digit OTP sent to +91 ${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}`,
