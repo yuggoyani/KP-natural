@@ -230,6 +230,30 @@ function PaymentContent() {
         setOrderRecord(updated);
       }
 
+      // Update in kp_natural_order_history as well
+      try {
+        const historyStr = localStorage.getItem("kp_natural_order_history");
+        if (historyStr) {
+          const history = JSON.parse(historyStr);
+          if (Array.isArray(history)) {
+            const updatedHistory = history.map((o: any) => {
+              if (o.orderId === currentOrderId) {
+                return {
+                  ...o,
+                  paymentStatus: "PAYMENT_SUBMITTED",
+                  orderStatus: "PAYMENT_VERIFICATION",
+                  utrNumber: cleanUtr,
+                };
+              }
+              return o;
+            });
+            localStorage.setItem("kp_natural_order_history", JSON.stringify(updatedHistory));
+          }
+        }
+      } catch {
+        // Ignore local storage error
+      }
+
       // Automatically clear cart after successful payment review submission
       try {
         clearCart();

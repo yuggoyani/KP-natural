@@ -3,7 +3,6 @@ import { calculateServerOrderPricing } from "@/lib/serverPricing";
 import { generateOrderId } from "@/lib/orderUtils";
 import { orderStorage } from "@/lib/orderStorage";
 import { isSupabaseConfigured, getSupabaseDiagnostics } from "@/lib/supabase";
-import { verifyPhoneVerificationToken } from "@/lib/otpService";
 import { CreateOrderRequest, CreateOrderResponse, OrderRecord, OrderItemRecord } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +12,7 @@ export const revalidate = 0;
 export async function POST(req: NextRequest) {
   try {
     const body: CreateOrderRequest = await req.json();
-    const { customerDetails, deliveryAddress, cartItems, phoneVerificationToken } = body;
+    const { customerDetails, deliveryAddress, cartItems } = body;
 
     // 1. Server-side Validation of Customer Details
     if (!customerDetails?.firstName?.trim() || !customerDetails?.lastName?.trim()) {
@@ -28,18 +27,6 @@ export async function POST(req: NextRequest) {
     if (last10Mobile.length !== 10 || !/^[6-9]\d{9}$/.test(last10Mobile)) {
       return NextResponse.json<CreateOrderResponse>(
         { success: false, error: "Valid 10-digit Indian mobile number is required" },
-        { status: 400 }
-      );
-    }
-
-    // 2. Cryptographic Server-side Mobile Number Verification Check
-    const tokenFromCookie = req.cookies.get("kp_customer_session")?.value;
-    const tokenToVerify = phoneVerificationToken || tokenFromCookie;
-    const verifiedSession = verifyPhoneVerificationToken(tokenToVerify);
-
-    if (!verifiedSession || verifiedSession.phone !== last10Mobile) {
-      return NextResponse.json<CreateOrderResponse>(
-        { success: false, error: "Please verify your mobile number before continuing." },
         { status: 400 }
       );
     }

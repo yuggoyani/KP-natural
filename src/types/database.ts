@@ -130,7 +130,6 @@ export interface CreateOrderRequest {
     packId: string;
     quantity: number;
   }[];
-  phoneVerificationToken?: string;
 }
 
 export interface CreateOrderResponse {
