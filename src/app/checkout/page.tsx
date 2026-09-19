@@ -23,6 +23,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { CheckoutProgress } from "@/components/checkout/CheckoutProgress";
 import { SearchableSelect } from "@/components/checkout/SearchableSelect";
+import { PhoneOtpVerification } from "@/components/checkout/PhoneOtpVerification";
 import { useCart } from "@/context/CartContext";
 import { GUJARAT_LOCATIONS } from "@/lib/locationService";
 import { CustomerDetails, DeliveryAddress, CheckoutData } from "@/types/checkout";
@@ -68,6 +69,10 @@ export default function CheckoutPage() {
     pinCode: "",
   });
 
+  // Mobile Verification State
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [phoneVerificationToken, setPhoneVerificationToken] = useState<string>("");
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,6 +97,13 @@ export default function CheckoutPage() {
             pinCode: parsed.deliveryAddress.pinCode || "",
           });
         }
+      }
+
+      const savedToken = localStorage.getItem("kp_phone_verification_token");
+      const savedVerifiedPhone = localStorage.getItem("kp_verified_mobile");
+      if (savedToken && savedVerifiedPhone) {
+        setPhoneVerificationToken(savedToken);
+        setIsPhoneVerified(true);
       }
     } catch {
       // Ignore read error
@@ -189,6 +201,8 @@ export default function CheckoutPage() {
       newErrors.mobileNumber = "Mobile number is required";
     } else if (mobileClean.length !== 10 || !/^[6-9]\d{9}$/.test(mobileClean)) {
       newErrors.mobileNumber = "Please enter a valid 10-digit Indian mobile number";
+    } else if (!isPhoneVerified) {
+      newErrors.mobileNumber = "Please verify your mobile number before continuing.";
     }
 
     // Email Address
@@ -226,6 +240,38 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handlePhoneVerified = (token: string, verifiedNumber: string) => {
+    setIsPhoneVerified(true);
+    setPhoneVerificationToken(token);
+    setFormData((prev) => ({ ...prev, mobileNumber: verifiedNumber }));
+
+    try {
+      localStorage.setItem("kp_phone_verification_token", token);
+      localStorage.setItem("kp_verified_mobile", verifiedNumber);
+    } catch {
+      // Ignore
+    }
+
+    if (errors.mobileNumber) {
+      setErrors((prev) => {
+        const newErr = { ...prev };
+        delete newErr.mobileNumber;
+        return newErr;
+      });
+    }
+  };
+
+  const handleResetVerification = () => {
+    setIsPhoneVerified(false);
+    setPhoneVerificationToken("");
+    try {
+      localStorage.removeItem("kp_phone_verification_token");
+      localStorage.removeItem("kp_verified_mobile");
+    } catch {
+      // Ignore
+    }
+  };
+
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -235,11 +281,13 @@ export default function CheckoutPage() {
     setSubmitError(null);
 
     if (!validateForm()) {
-      // Scroll to the first error
-      const firstErrorKey = Object.keys(errors)[0];
-      const elem = document.getElementById(firstErrorKey);
-      if (elem) {
-        elem.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Scroll to the first error or mobile verification
+      const firstErrorKey = Object.keys(errors)[0] || (!isPhoneVerified ? "mobileNumberInput" : undefined);
+      if (firstErrorKey) {
+        const elem = document.getElementById(firstErrorKey) || document.getElementById("mobileNumberInput");
+        if (elem) {
+          elem.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
       }
       return;
     }
@@ -271,6 +319,7 @@ export default function CheckoutPage() {
           customerDetails,
           deliveryAddress,
           cartItems: items.map((i) => ({ packId: i.packId, quantity: i.quantity })),
+          phoneVerificationToken,
         }),
       });
 
@@ -472,37 +521,26 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Mobile Number */}
-                  <div className="flex flex-col text-left">
-                    <label htmlFor="mobileNumber" className="text-xs font-semibold uppercase tracking-wider text-brand-text-primary mb-1.5 flex items-center gap-1">
-                      <Phone className="w-3.5 h-3.5 text-brand-green" />
-                      <span>Mobile Number (10 Digits)</span>
-                      <span className="text-rose-600 font-bold">*</span>
-                    </label>
-                    <div className="relative flex items-center">
-                      <span className="absolute left-3.5 text-sm font-semibold text-brand-text-muted select-none">
-                        +91
-                      </span>
-                      <input
-                        id="mobileNumber"
-                        name="mobileNumber"
-                        type="tel"
-                        maxLength={10}
-                        value={formData.mobileNumber}
-                        onChange={handleInputChange}
-                        placeholder="9876543210"
-                        className={cn(
-                          "w-full h-12 pl-12 pr-4 rounded-farm bg-white border text-sm text-brand-text-primary placeholder:text-brand-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green",
-                          errors.mobileNumber ? "border-rose-500 ring-1 ring-rose-500/30" : "border-brand-border"
-                        )}
-                      />
-                    </div>
-                    {errors.mobileNumber && (
-                      <span className="text-xs text-rose-600 font-medium mt-1">
-                        {errors.mobileNumber}
-                      </span>
-                    )}
-                  </div>
+                  {/* Mobile Number with OTP Verification */}
+                  <PhoneOtpVerification
+                    mobileNumber={formData.mobileNumber}
+                    onMobileChange={(newVal) => {
+                      setFormData((prev) => ({ ...prev, mobileNumber: newVal }));
+                      if (errors.mobileNumber) {
+                        setErrors((prev) => {
+                          const newErr = { ...prev };
+                          delete newErr.mobileNumber;
+                          return newErr;
+                        });
+                      }
+                    }}
+                    isVerified={isPhoneVerified}
+                    onVerified={handlePhoneVerified}
+                    onResetVerification={handleResetVerification}
+                    error={errors.mobileNumber}
+                    required
+                    purpose="checkout"
+                  />
 
                   {/* Email Address */}
                   <div className="flex flex-col text-left">

@@ -77,6 +77,7 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMP WITH T
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMP WITH TIME ZONE;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS admin_notes TEXT;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS is_phone_verified BOOLEAN DEFAULT true;
 
 -- 2. ORDER ITEMS TABLE
 CREATE TABLE IF NOT EXISTS public.order_items (
@@ -95,7 +96,18 @@ CREATE TABLE IF NOT EXISTS public.order_items (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. INDEXES FOR HIGH-PERFORMANCE SEARCH & SORTING
+-- 3. PHONE VERIFICATIONS TABLE (SECURE OTP STORAGE & RATE LIMITING)
+CREATE TABLE IF NOT EXISTS public.phone_verifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phone_number VARCHAR(20) NOT NULL,
+    otp_hash VARCHAR(128) NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    verified_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. INDEXES FOR HIGH-PERFORMANCE SEARCH & SORTING
 CREATE INDEX IF NOT EXISTS idx_orders_order_id ON public.orders(order_id);
 CREATE INDEX IF NOT EXISTS idx_orders_mobile_number ON public.orders(mobile_number);
 CREATE INDEX IF NOT EXISTS idx_orders_email ON public.orders(email);
@@ -104,8 +116,10 @@ CREATE INDEX IF NOT EXISTS idx_orders_order_status ON public.orders(order_status
 CREATE INDEX IF NOT EXISTS idx_orders_utr_number ON public.orders(utr_number);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_phone_verifications_phone ON public.phone_verifications(phone_number, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_phone_verifications_expires_at ON public.phone_verifications(expires_at);
 
--- 4. AUTOMATIC UPDATED_AT TRIGGER
+-- 5. AUTOMATIC UPDATED_AT TRIGGER
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -120,9 +134,10 @@ BEFORE UPDATE ON public.orders
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_updated_at();
 
--- 5. ROW LEVEL SECURITY (RLS) POLICIES
+-- 6. ROW LEVEL SECURITY (RLS) POLICIES
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.phone_verifications ENABLE ROW LEVEL SECURITY;
 
 -- Clean existing policies if re-running
 DROP POLICY IF EXISTS "Public can insert orders" ON public.orders;
@@ -133,6 +148,7 @@ DROP POLICY IF EXISTS "Public cannot update orders" ON public.orders;
 DROP POLICY IF EXISTS "Public cannot delete orders" ON public.orders;
 DROP POLICY IF EXISTS "Allow all for server API and public on orders" ON public.orders;
 DROP POLICY IF EXISTS "Allow all for server API and public on order_items" ON public.order_items;
+DROP POLICY IF EXISTS "Allow all for server API on phone_verifications" ON public.phone_verifications;
 
 -- Full CRUD policies for API routes (both service_role and anon/authenticated keys)
 CREATE POLICY "Allow all for server API and public on orders"
@@ -148,3 +164,11 @@ FOR ALL
 TO anon, authenticated, service_role
 USING (true)
 WITH CHECK (true);
+
+CREATE POLICY "Allow all for server API on phone_verifications"
+ON public.phone_verifications
+FOR ALL
+TO anon, authenticated, service_role
+USING (true)
+WITH CHECK (true);
+

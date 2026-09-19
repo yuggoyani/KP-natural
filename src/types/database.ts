@@ -53,6 +53,7 @@ export interface OrderRecord {
   cancelled_at?: string | null;
   cancellation_reason?: string | null;
   admin_notes?: string | null;
+  is_phone_verified?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -68,6 +69,45 @@ export interface OrderItemRecord {
   line_total: number;
   free_cocopeat_quantity: number;
   created_at?: string;
+}
+
+export interface PhoneVerificationRecord {
+  id?: string;
+  phone_number: string;
+  otp_hash: string;
+  attempts: number;
+  expires_at: string;
+  verified_at?: string | null;
+  created_at?: string;
+}
+
+export interface SendOtpRequest {
+  mobileNumber: string;
+  purpose?: "checkout" | "order_history";
+}
+
+export interface SendOtpResponse {
+  success: boolean;
+  message?: string;
+  expiresInSeconds?: number;
+  resendCooldownSeconds?: number;
+  error?: string;
+  isDemoMode?: boolean;
+}
+
+export interface VerifyOtpRequest {
+  mobileNumber: string;
+  otp: string;
+  purpose?: "checkout" | "order_history";
+}
+
+export interface VerifyOtpResponse {
+  success: boolean;
+  message?: string;
+  phoneVerificationToken?: string;
+  customerSessionToken?: string;
+  verifiedMobile?: string;
+  error?: string;
 }
 
 export interface CreateOrderRequest {
@@ -90,6 +130,7 @@ export interface CreateOrderRequest {
     packId: string;
     quantity: number;
   }[];
+  phoneVerificationToken?: string;
 }
 
 export interface CreateOrderResponse {
@@ -99,6 +140,19 @@ export interface CreateOrderResponse {
   items?: OrderItemRecord[];
   error?: string;
   isDemoMode?: boolean;
+}
+
+export interface CustomerOrderHistoryItem {
+  order: OrderRecord;
+  items: OrderItemRecord[];
+}
+
+export interface CustomerOrdersResponse {
+  success: boolean;
+  orders?: CustomerOrderHistoryItem[];
+  verifiedMobile?: string;
+  totalOrders?: number;
+  error?: string;
 }
 
 export interface SubmitPaymentRequest {
@@ -149,3 +203,4 @@ export interface AdminOrderStats {
   cancelled: number;
   totalRevenue: number;
 }
+

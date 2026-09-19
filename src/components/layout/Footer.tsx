@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Leaf, ShieldCheck, Heart } from "lucide-react";
+import { Leaf, ShieldCheck, Heart, Mail, Instagram, MapPin, Phone } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 
 const QUICK_LINKS = [
@@ -9,6 +9,7 @@ const QUICK_LINKS = [
   { label: "Shop Products", href: "/#vermicompost-showcase" },
   { label: "Product Categories", href: "/#categories" },
   { label: "Track Your Order", href: "/track-order" },
+  { label: "Order History", href: "/order-history" },
   { label: "Our Farm Story", href: "/#story" },
   { label: "Quality & Trust", href: "/#quality" },
 ];
@@ -108,28 +109,51 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 5: Contact Placeholder Section */}
+          {/* Col 5: Official Contact Information */}
           <div className="flex flex-col sm:col-span-2 md:col-span-1">
             <h3 className="font-serif text-sm sm:text-base font-semibold text-brand-text-primary mb-3 sm:mb-4 tracking-wide">
-              Farm Inquiries
+              Official Contact
             </h3>
-            <div className="flex flex-col gap-2.5 text-xs sm:text-sm text-brand-text-secondary">
+            <div className="flex flex-col gap-3 text-xs sm:text-sm text-brand-text-secondary">
+              {/* Email */}
               <div>
                 <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-brand-text-muted block mb-0.5">
-                  Customer Support
+                  Email Us
                 </span>
-                <span className="text-brand-text-primary font-medium">
-                  support@kpnaturals.com
-                </span>
+                <a
+                  href="mailto:kpnaturaldairyfarm@gmail.com"
+                  className="font-medium text-brand-green hover:underline flex items-center gap-1.5 transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                  <span className="truncate">kpnaturaldairyfarm@gmail.com</span>
+                </a>
               </div>
 
+              {/* Instagram */}
+              <div>
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-brand-text-muted block mb-0.5">
+                  Follow On Instagram
+                </span>
+                <a
+                  href="https://www.instagram.com/kpnaturaldairyfarm/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-brand-green hover:underline flex items-center gap-1.5 transition-colors"
+                >
+                  <Instagram className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                  <span>@kpnaturaldairyfarm</span>
+                </a>
+              </div>
+
+              {/* Farm Location */}
               <div>
                 <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-brand-text-muted block mb-0.5">
                   Farm Location
                 </span>
-                <span className="text-brand-text-primary">
-                  Gujarat, India
-                </span>
+                <div className="flex items-center gap-1.5 text-brand-text-primary">
+                  <MapPin className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                  <span>Gujarat, India</span>
+                </div>
               </div>
 
               <div className="pt-1">

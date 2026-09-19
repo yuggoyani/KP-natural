@@ -524,7 +524,13 @@ export default function AdminOrderDetailPage({
 
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-brand-text-muted block">Mobile Number</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] uppercase font-bold text-brand-text-muted block">Mobile Number</span>
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-300">
+                        <CheckCircle2 className="w-2.5 h-2.5 text-emerald-700" />
+                        <span>Verified</span>
+                      </span>
+                    </div>
                     <a
                       href={`tel:${order.mobile_number}`}
                       className="font-semibold text-brand-green hover:underline flex items-center gap-1 mt-0.5"

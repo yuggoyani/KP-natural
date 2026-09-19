@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { label: "Our Products", href: "/#categories" },
   { label: "About Us", href: "/#story" },
   { label: "Track Order", href: "/track-order" },
+  { label: "Order History", href: "/order-history" },
 ];
 
 export function Navbar() {

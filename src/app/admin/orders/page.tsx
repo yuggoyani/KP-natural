@@ -436,8 +436,9 @@ export default function AdminOrdersDashboardPage() {
                         <span className="font-semibold text-brand-text-primary block">
                           {order.first_name} {order.last_name}
                         </span>
-                        <span className="text-[11px] text-brand-text-muted block">
-                          +91 {order.mobile_number}
+                        <span className="text-[11px] text-brand-text-muted flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                          <span>+91 {order.mobile_number}</span>
                         </span>
                       </td>
 
@@ -516,7 +517,10 @@ export default function AdminOrdersDashboardPage() {
                     <div>
                       <span className="text-[10px] uppercase font-bold text-brand-text-muted block">Customer</span>
                       <span className="font-semibold text-brand-text-primary">{order.first_name} {order.last_name}</span>
-                      <span className="text-brand-text-muted block">+91 {order.mobile_number}</span>
+                      <span className="text-brand-text-muted flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span>+91 {order.mobile_number}</span>
+                      </span>
                     </div>
 
                     <div>

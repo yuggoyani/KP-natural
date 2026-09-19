@@ -343,7 +343,7 @@ function PaymentContent() {
             </div>
 
             {/* Order Reference Details Grid */}
-            <div className="py-6 border-b border-brand-border/70 grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+            <div className="py-6 border-b border-brand-border/70 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 text-sm">
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-text-muted">
                   Official Order Reference
@@ -373,6 +373,21 @@ function PaymentContent() {
               </div>
 
               <div className="flex flex-col gap-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-brand-text-muted">
+                  Customer & Phone
+                </span>
+                <span className="text-xs font-semibold text-brand-text-primary">
+                  {customerName}
+                </span>
+                {(orderRecord?.mobile_number || checkoutData?.customerDetails?.mobileNumber) && (
+                  <span className="text-[11px] text-emerald-800 font-medium flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <span>+91 {orderRecord?.mobile_number || checkoutData?.customerDetails?.mobileNumber} (Verified)</span>
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-text-muted">
                   Amount Submitted
                 </span>
