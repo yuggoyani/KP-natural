@@ -43,7 +43,6 @@ export async function sendOtpSms({ mobileNumber, otp }: SendSmsOptions): Promise
     }
 
     try {
-      // If DLT sender & template are configured, use DLT route
       const senderId = process.env.FAST2SMS_SENDER_ID?.trim();
       const templateId = process.env.FAST2SMS_TEMPLATE_ID?.trim();
 
@@ -52,21 +51,26 @@ export async function sendOtpSms({ mobileNumber, otp }: SendSmsOptions): Promise
       };
 
       if (senderId && templateId) {
+        // DLT Route (preserved for future enterprise sender ID & template usage)
         payload.route = "dlt";
         payload.sender_id = senderId;
         payload.message = templateId;
         payload.variables_values = otp;
       } else {
-        // Fast2SMS Quick OTP route
-        payload.route = "otp";
-        payload.variables_values = otp;
+        // Fast2SMS Quick SMS route ("q") - delivers custom OTP message without KYC block
+        payload.route = "q";
+        payload.message = messageText;
+        payload.language = "english";
+        payload.flash = 0;
       }
 
       const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
         method: "POST",
         headers: {
           authorization: apiKey,
+          Authorization: apiKey,
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -86,7 +90,7 @@ export async function sendOtpSms({ mobileNumber, otp }: SendSmsOptions): Promise
       }
 
       const errMsg = Array.isArray(data.message) ? data.message.join(", ") : (data.message || "Fast2SMS dispatch failed");
-      console.error("[SMS Gateway] Fast2SMS dispatch returned error:", errMsg);
+      console.error("[SMS Gateway] Fast2SMS Quick SMS dispatch returned error:", errMsg);
       return {
         success: false,
         provider: "fast2sms",
