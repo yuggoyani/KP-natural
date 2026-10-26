@@ -61,7 +61,7 @@ export const AVAILABLE_CATEGORIES: CategoryItem[] = [
     ctaText: "SHOP COCOPEAT",
     targetId: "cocopeat-showcase",
     image: "/images/cocopeat-packaging.jpg",
-    priceNote: "₹80 for 1 KG Pack",
+    priceNote: "Starting from ₹80 (1 KG to 25 KG)",
   },
 ];
 

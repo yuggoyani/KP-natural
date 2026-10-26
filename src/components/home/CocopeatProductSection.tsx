@@ -253,9 +253,16 @@ export function CocopeatProductSection() {
                           <span className="font-serif font-bold text-base sm:text-lg text-brand-text-primary">
                             {pack.name}
                           </span>
-                          <span className="font-serif font-bold text-base sm:text-lg text-brand-green">
-                            ₹{pack.price.toLocaleString("en-IN")}
-                          </span>
+                          <div className="flex items-baseline gap-1.5">
+                            {pack.originalPrice && pack.originalPrice > pack.price && (
+                              <span className="text-xs text-brand-text-muted line-through">
+                                ₹{pack.originalPrice}
+                              </span>
+                            )}
+                            <span className="font-serif font-bold text-base sm:text-lg text-brand-green">
+                              ₹{pack.price.toLocaleString("en-IN")}
+                            </span>
+                          </div>
                         </div>
 
                         <div className="text-xs text-brand-text-muted">

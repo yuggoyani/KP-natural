@@ -33,8 +33,8 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Vermicompost Fertiliser",
     productType: "VERMICOMPOST",
     weightKg: 5,
-    originalPrice: 260,
-    price: 200, // ₹200
+    originalPrice: 320,
+    price: 250, // ₹250
     freeCocopeatKg: 0,
     freeDelivery: false,
     badge: "Popular Value",
@@ -48,8 +48,8 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Vermicompost Fertiliser",
     productType: "VERMICOMPOST",
     weightKg: 10,
-    originalPrice: 450,
-    price: 350, // ₹350
+    originalPrice: 500,
+    price: 400, // ₹400
     freeCocopeatKg: 0,
     freeDelivery: false,
     badge: "Most Popular",
@@ -73,7 +73,7 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     description: "Heavy-duty farm & agricultural pack for orchards and large plots.",
   },
 
-  // NEW COCOPEAT CATEGORY PRODUCTS
+  // COCOPEAT CATEGORY PRODUCTS
   "cocopeat-1kg": {
     id: "cocopeat-1kg",
     name: "1 KG Pack",
@@ -96,14 +96,44 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Organic Cocopeat",
     productType: "COCOPEAT",
     weightKg: 5,
+    originalPrice: 250,
+    price: 200, // ₹200 for 5 kg
+    freeCocopeatKg: 0,
+    freeDelivery: false,
+    badge: "Popular Value",
+    image: "/images/cocopeat-packaging.jpg",
+    description: "Economical 5 KG pack for potting soil mixes, root aeration, and plant propagation.",
+  },
+  "cocopeat-10kg": {
+    id: "cocopeat-10kg",
+    name: "10 KG Pack",
+    category: "COCOPEAT",
+    productName: "KP Natural Organic Cocopeat",
+    productType: "COCOPEAT",
+    weightKg: 10,
     originalPrice: 450,
-    price: 380, // ₹380 for 5 kg value pack
+    price: 350, // ₹350 for 10 kg
     freeCocopeatKg: 0,
     freeDelivery: false,
     badge: "Best Value",
     isPopular: true,
     image: "/images/cocopeat-packaging.jpg",
-    description: "Economical 5 KG pack for potting soil mixes, root aeration, and plant propagation.",
+    description: "Ideal for home garden setups, raised beds, and seedling nurseries.",
+  },
+  "cocopeat-25kg": {
+    id: "cocopeat-25kg",
+    name: "25 KG Pack",
+    category: "COCOPEAT",
+    productName: "KP Natural Organic Cocopeat",
+    productType: "COCOPEAT",
+    weightKg: 25,
+    originalPrice: 750,
+    price: 600, // ₹600 for 25 kg
+    freeCocopeatKg: 0,
+    freeDelivery: false,
+    badge: "Bulk Farm Pack",
+    image: "/images/cocopeat-packaging.jpg",
+    description: "Large farm & nursery bag for large potting projects and garden soil conditioning.",
   },
 };
 
@@ -123,6 +153,8 @@ export const VERMICOMPOST_PACKS: ProductPack[] = [
 export const COCOPEAT_PACKS: ProductPack[] = [
   SERVER_PRODUCT_CATALOG["cocopeat-1kg"],
   SERVER_PRODUCT_CATALOG["cocopeat-5kg"],
+  SERVER_PRODUCT_CATALOG["cocopeat-10kg"],
+  SERVER_PRODUCT_CATALOG["cocopeat-25kg"],
 ];
 
 /**
