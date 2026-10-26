@@ -81,8 +81,8 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Organic Cocopeat",
     productType: "COCOPEAT",
     weightKg: 1,
-    originalPrice: 45,
-    price: 30, // ₹30 for 1 kg
+    originalPrice: 100,
+    price: 80, // ₹80 for 1 kg
     freeCocopeatKg: 0,
     freeDelivery: false,
     badge: "100% Organic",
@@ -96,8 +96,8 @@ export const SERVER_PRODUCT_CATALOG: Record<string, ServerProductPack> = {
     productName: "KP Natural Organic Cocopeat",
     productType: "COCOPEAT",
     weightKg: 5,
-    originalPrice: 200,
-    price: 150, // ₹150 for 5 kg (₹30/kg)
+    originalPrice: 450,
+    price: 380, // ₹380 for 5 kg value pack
     freeCocopeatKg: 0,
     freeDelivery: false,
     badge: "Best Value",

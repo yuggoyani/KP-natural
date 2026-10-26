@@ -140,7 +140,7 @@ export function CocopeatProductSection() {
                   Washed & Naturally Dried
                 </span>
                 <span className="text-brand-green font-medium text-[11px] sm:text-xs">
-                  ₹30 / 1 KG Pack
+                  ₹80 / 1 KG Pack
                 </span>
               </div>
             </div>
