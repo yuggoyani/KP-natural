@@ -16,6 +16,7 @@ const QUICK_LINKS = [
 
 const PRODUCT_LINKS = [
   { label: "Vermicompost Fertiliser", href: "/#vermicompost-showcase", badge: "Available" },
+  { label: "Organic Cocopeat", href: "/#cocopeat-showcase", badge: "Available" },
   { label: "Traditional Sweets", href: "/#categories", badge: "Coming Soon" },
   { label: "Milk & Dairy Products", href: "/#categories", badge: "Coming Soon" },
   { label: "Desi Cow Ghee", href: "/#categories", badge: "Coming Soon" },

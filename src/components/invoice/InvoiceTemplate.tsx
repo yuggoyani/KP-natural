@@ -34,16 +34,18 @@ export function InvoiceTemplate({ order, items }: InvoiceTemplateProps) {
 
   const customerName = `${order.first_name || ""} ${order.middle_name ? `${order.middle_name} ` : ""}${order.last_name || ""}`.trim() || "Valued Customer";
 
-  // Calculate free cocopeat
+  // Calculate free cocopeat (legacy support)
   const totalFreeCocopeatKg = items.reduce(
     (acc, item) => acc + (Number(item.free_cocopeat_quantity) || 0),
     0
   );
 
-  const cocopeatValue = totalFreeCocopeatKg * 100; // Rs 100/kg standard price
-  const rawSubtotal = items.reduce((sum, item) => sum + Number(item.line_total), 0) + (totalFreeCocopeatKg > 0 ? cocopeatValue : 0);
-  const promotionalDiscount = cocopeatValue;
-  const grandTotal = Number(order.total_amount);
+  const cocopeatValue = totalFreeCocopeatKg * 30;
+  const itemsSubtotal = items.reduce((sum, item) => sum + Number(item.line_total), 0);
+  const rawSubtotal = Number(order.subtotal) || itemsSubtotal;
+  const deliveryCharge = Number(order.delivery_charge || 0);
+  const promotionalDiscount = totalFreeCocopeatKg > 0 ? cocopeatValue : 0;
+  const grandTotal = Number(order.total_amount) || (rawSubtotal + deliveryCharge);
 
   return (
     <div
@@ -328,7 +330,7 @@ export function InvoiceTemplate({ order, items }: InvoiceTemplateProps) {
                 <div className="flex justify-between text-[#5A6D63]">
                   <span>Delivery Charges:</span>
                   <span className={Number(order.delivery_charge || 0) > 0 ? "font-semibold text-[#11251B]" : "text-[#0F5E3D] font-medium"}>
-                    {Number(order.delivery_charge || 0) > 0 ? `₹${Number(order.delivery_charge).toLocaleString("en-IN")}` : "FREE"}
+                    {Number(order.delivery_charge || 0) > 0 ? `₹${Number(order.delivery_charge).toLocaleString("en-IN")}` : "FREE (Surat)"}
                   </span>
                 </div>
                 <div className="flex justify-between text-[#5A6D63]">

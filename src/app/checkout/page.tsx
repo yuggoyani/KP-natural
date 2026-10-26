@@ -26,6 +26,7 @@ import { SearchableSelect } from "@/components/checkout/SearchableSelect";
 import { useCart } from "@/context/CartContext";
 import { GUJARAT_LOCATIONS } from "@/lib/locationService";
 import { CustomerDetails, DeliveryAddress, CheckoutData } from "@/types/checkout";
+import { calculateDeliveryCharge, isSuratCity } from "@/lib/serverPricing";
 import { cn } from "@/lib/utils";
 
 export default function CheckoutPage() {
@@ -34,9 +35,8 @@ export default function CheckoutPage() {
     items,
     totalItems,
     totalAmount,
-    deliveryCharge,
-    finalPayable,
-    totalFreeCocopeat,
+    deliveryDistrict,
+    setDeliveryDistrict,
     totalWeightKg,
     isHydrated,
   } = useCart();
@@ -117,8 +117,16 @@ export default function CheckoutPage() {
       }))
     : [];
 
+  const isSurat = isSuratCity(formData.districtOrCity || deliveryDistrict);
+  const currentDeliveryCharge = calculateDeliveryCharge(
+    totalWeightKg,
+    formData.districtOrCity || deliveryDistrict || "Surat"
+  );
+  const currentFinalPayable = totalAmount + currentDeliveryCharge;
+
   // Handlers for dynamic location selection
   const handleDistrictChange = (district: string) => {
+    setDeliveryDistrict(district);
     setFormData((prev) => ({
       ...prev,
       districtOrCity: district,
@@ -289,9 +297,9 @@ export default function CheckoutPage() {
         deliveryAddress,
         cartItems: items,
         subtotal: result.order?.subtotal ?? totalAmount,
-        deliveryCharge: result.order?.delivery_charge ?? deliveryCharge,
-        totalAmount: result.order?.total_amount ?? finalPayable,
-        totalFreeCocopeat,
+        deliveryCharge: result.order?.delivery_charge ?? currentDeliveryCharge,
+        totalAmount: result.order?.total_amount ?? currentFinalPayable,
+        totalFreeCocopeat: 0,
         createdAt: Date.now(),
       };
 
@@ -310,9 +318,9 @@ export default function CheckoutPage() {
           createdAt: new Date().toISOString(),
           customerName: `${customerDetails.firstName} ${customerDetails.lastName}`.trim(),
           mobileNumber: customerDetails.mobileNumber,
-          totalAmount: result.order?.total_amount ?? finalPayable,
+          totalAmount: result.order?.total_amount ?? currentFinalPayable,
           subtotal: result.order?.subtotal ?? totalAmount,
-          deliveryCharge: result.order?.delivery_charge ?? deliveryCharge,
+          deliveryCharge: result.order?.delivery_charge ?? currentDeliveryCharge,
           orderStatus: result.order?.order_status ?? "AWAITING_PAYMENT",
           paymentStatus: result.order?.payment_status ?? "PENDING",
           itemCount: items.reduce((acc, i) => acc + i.quantity, 0),
@@ -327,7 +335,7 @@ export default function CheckoutPage() {
             weightKg: item.weightKg,
             quantity: item.quantity,
             price: item.price,
-            freeCocopeatKg: item.freeCocopeatKg,
+            freeCocopeatKg: 0,
           })),
         };
 
@@ -783,7 +791,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-3">
                       <div className="relative w-11 h-13 sm:w-12 sm:h-14 rounded overflow-hidden border border-brand-border bg-white shrink-0">
                         <Image
-                          src="/images/vermicompost-label.png"
+                          src={item.image || (item.category === "COCOPEAT" || item.packId.includes("cocopeat") ? "/images/cocopeat-packaging.jpg" : "/images/vermicompost-label.png")}
                           alt={item.packName}
                           fill
                           sizes="48px"
@@ -798,12 +806,9 @@ export default function CheckoutPage() {
                         <span className="text-[11px] sm:text-xs text-brand-text-muted block">
                           Qty: {item.quantity} × ₹{item.price.toLocaleString("en-IN")}
                         </span>
-                        {item.freeCocopeatKg > 0 && (
-                          <span className="text-[10px] font-semibold text-brand-green flex items-center gap-1 mt-0.5">
-                            <Gift className="w-3 h-3 shrink-0" />
-                            +{item.freeCocopeatKg * item.quantity} KG Cocopeat FREE
-                          </span>
-                        )}
+                        <span className="text-[10px] text-brand-green font-medium block">
+                          {item.weightKg * item.quantity} KG
+                        </span>
                       </div>
                     </div>
 
@@ -823,20 +828,12 @@ export default function CheckoutPage() {
                   </span>
                 </div>
 
-                {totalFreeCocopeat > 0 && (
-                  <div className="flex items-center justify-between text-brand-green font-medium">
-                    <span className="flex items-center gap-1.5">
-                      <Gift className="w-3.5 h-3.5 shrink-0" />
-                      Free Cocopeat Bonus:
-                    </span>
-                    <span className="font-semibold">+{totalFreeCocopeat} KG FREE</span>
-                  </div>
-                )}
-
                 <div className="flex items-center justify-between">
                   <span>Delivery Charges:</span>
-                  <span className={deliveryCharge > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
-                    {deliveryCharge > 0 ? `₹${deliveryCharge.toLocaleString("en-IN")}` : "FREE DELIVERY"}
+                  <span className={currentDeliveryCharge > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
+                    {currentDeliveryCharge > 0
+                      ? `₹${currentDeliveryCharge.toLocaleString("en-IN")} (₹45 × ${totalWeightKg} KG)`
+                      : "FREE (Surat Delivery)"}
                   </span>
                 </div>
 
@@ -845,7 +842,7 @@ export default function CheckoutPage() {
                     Final Payable:
                   </span>
                   <span className="font-serif font-bold text-xl sm:text-2xl text-brand-green">
-                    ₹{finalPayable.toLocaleString("en-IN")}
+                    ₹{currentFinalPayable.toLocaleString("en-IN")}
                   </span>
                 </div>
               </div>

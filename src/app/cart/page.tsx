@@ -9,16 +9,18 @@ import {
   Minus,
   ArrowRight,
   ArrowLeft,
-  Gift,
   Truck,
   ShieldCheck,
   ShoppingBag,
   Leaf,
   Check,
+  MapPin,
+  Sprout,
 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/context/CartContext";
+import { cn } from "@/lib/utils";
 
 export default function CartPage() {
   const {
@@ -27,8 +29,10 @@ export default function CartPage() {
     totalAmount,
     deliveryCharge,
     finalPayable,
-    totalFreeCocopeat,
     totalWeightKg,
+    deliveryDistrict,
+    isSurat,
+    setDeliveryDistrict,
     updateQuantity,
     removeItem,
     isHydrated,
@@ -79,17 +83,26 @@ export default function CartPage() {
             </h1>
 
             <p className="text-sm sm:text-base text-brand-text-secondary leading-relaxed mb-8 max-w-md">
-              You haven't added any products to your cart yet. Explore our farm-fresh Vermicompost Fertilizer to give your plants and soil pure natural vitality.
+              You haven't added any products to your cart yet. Explore our farm-fresh Vermicompost Fertilizer & Organic Cocopeat.
             </p>
 
-            <Button
-              variant="primary"
-              size="lg"
-              href="/#vermicompost-showcase"
-              icon={<ArrowRight className="w-5 h-5" />}
-            >
-              EXPLORE VERMICOMPOST
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+              <Button
+                variant="primary"
+                size="lg"
+                href="/#vermicompost-showcase"
+                icon={<ArrowRight className="w-5 h-5" />}
+              >
+                EXPLORE VERMICOMPOST
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                href="/#cocopeat-showcase"
+              >
+                EXPLORE COCOPEAT
+              </Button>
+            </div>
           </div>
         </Container>
       </div>
@@ -123,7 +136,7 @@ export default function CartPage() {
           </h1>
 
           <p className="text-xs sm:text-sm md:text-base text-brand-text-secondary leading-relaxed">
-            Review your selected Vermicompost products before continuing to checkout.
+            Review your selected farm products before continuing to checkout.
           </p>
         </div>
 
@@ -134,7 +147,8 @@ export default function CartPage() {
           <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-3.5 sm:gap-4 w-full">
             {items.map((item) => {
               const itemTotal = item.price * item.quantity;
-              const itemFreeCocopeat = item.freeCocopeatKg * item.quantity;
+              const isCocopeat = item.category === "COCOPEAT" || item.packId.includes("cocopeat");
+              const artworkSrc = item.image || (isCocopeat ? "/images/cocopeat-packaging.jpg" : "/images/vermicompost-label.png");
 
               return (
                 <div
@@ -146,8 +160,8 @@ export default function CartPage() {
                     {/* Thumbnail Artwork Reference */}
                     <div className="relative w-16 h-20 sm:w-20 sm:h-24 md:w-24 md:h-28 rounded-farm overflow-hidden border border-brand-border bg-white shrink-0 shadow-xs">
                       <Image
-                        src="/images/vermicompost-label.png"
-                        alt="KP Natural Vermicompost"
+                        src={artworkSrc}
+                        alt={item.packName}
                         fill
                         sizes="(max-width: 640px) 64px, 96px"
                         className="object-contain p-1"
@@ -158,29 +172,37 @@ export default function CartPage() {
                     {/* Details */}
                     <div className="flex flex-col items-start text-left flex-1 min-w-0">
                       <div className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-brand-green uppercase tracking-wider mb-0.5">
-                        <Leaf className="w-3 h-3 shrink-0" />
-                        <span className="truncate">KP Natural Vermicompost</span>
+                        {isCocopeat ? (
+                          <>
+                            <Sprout className="w-3 h-3 shrink-0" />
+                            <span>KP Natural Organic Cocopeat</span>
+                          </>
+                        ) : (
+                          <>
+                            <Leaf className="w-3 h-3 shrink-0" />
+                            <span>KP Natural Vermicompost</span>
+                          </>
+                        )}
                       </div>
 
                       <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold text-brand-text-primary leading-tight mb-0.5 truncate w-full">
                         {item.packName}
                       </h3>
 
-                      <span className="text-xs text-brand-text-muted mb-1.5">
-                        Unit Price: ₹{item.price.toLocaleString("en-IN")}
-                      </span>
-
-                      {/* Free Cocopeat Tag */}
-                      {itemFreeCocopeat > 0 ? (
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-brand-green-50 border border-brand-green-200 text-brand-green text-[10px] sm:text-[11px] font-semibold">
-                          <Gift className="w-3 h-3 shrink-0" />
-                          <span>+{itemFreeCocopeat} KG Cocopeat FREE</span>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] sm:text-[11px] text-brand-text-muted">
-                          Standard Farm Formulation
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-brand-text-muted">
+                          Unit Price: ₹{item.price.toLocaleString("en-IN")}
                         </span>
-                      )}
+                        {item.originalPrice && item.originalPrice > item.price && (
+                          <span className="text-[11px] text-brand-text-muted line-through">
+                            ₹{item.originalPrice}
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="text-[10px] sm:text-[11px] text-brand-green font-medium">
+                        Weight: {item.weightKg} KG per pack
+                      </span>
                     </div>
                   </div>
 
@@ -217,7 +239,7 @@ export default function CartPage() {
                         ₹{itemTotal.toLocaleString("en-IN")}
                       </span>
                       <span className="text-[10px] text-brand-text-muted">
-                        ({item.weightKg * item.quantity} KG)
+                        ({item.weightKg * item.quantity} KG Total)
                       </span>
                     </div>
 
@@ -236,14 +258,21 @@ export default function CartPage() {
               );
             })}
 
-            {/* Back to Shopping Link */}
-            <div className="pt-2 sm:pt-4 flex items-center justify-between">
+            {/* Back to Shopping Links */}
+            <div className="pt-2 sm:pt-4 flex flex-wrap items-center justify-between gap-3">
               <Link
                 href="/#vermicompost-showcase"
-                className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-text-secondary hover:text-brand-green transition-colors py-2"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-brand-text-secondary hover:text-brand-green transition-colors py-1"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Add more packs or products</span>
+                <span>Add More Vermicompost</span>
+              </Link>
+              <Link
+                href="/#cocopeat-showcase"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-brand-text-secondary hover:text-brand-green transition-colors py-1"
+              >
+                <Sprout className="w-4 h-4 text-brand-green" />
+                <span>Add Cocopeat (₹30/KG)</span>
               </Link>
             </div>
           </div>
@@ -254,6 +283,40 @@ export default function CartPage() {
               <h2 className="font-serif font-bold text-lg sm:text-xl text-brand-text-primary pb-2.5 mb-3.5 sm:mb-4 border-b border-brand-border/70">
                 Order Summary
               </h2>
+
+              {/* Delivery Destination Selector Pill */}
+              <div className="mb-4 p-3 rounded-farm bg-brand-ivory border border-brand-border/70">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-brand-text-primary block mb-2 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-brand-green" />
+                  <span>Delivery Destination:</span>
+                </span>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryDistrict("Surat")}
+                    className={cn(
+                      "py-2 px-2.5 rounded-lg border font-semibold text-center transition-all",
+                      isSurat
+                        ? "bg-brand-green text-brand-ivory border-brand-green shadow-xs"
+                        : "bg-white text-brand-text-primary border-brand-border hover:bg-brand-ivory-300/60"
+                    )}
+                  >
+                    <span>Surat (FREE)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryDistrict("Other District")}
+                    className={cn(
+                      "py-2 px-2.5 rounded-lg border font-semibold text-center transition-all",
+                      !isSurat
+                        ? "bg-brand-green text-brand-ivory border-brand-green shadow-xs"
+                        : "bg-white text-brand-text-primary border-brand-border hover:bg-brand-ivory-300/60"
+                    )}
+                  >
+                    <span>Outside (₹45/kg)</span>
+                  </button>
+                </div>
+              </div>
 
               <div className="space-y-2.5 sm:space-y-3.5 text-xs sm:text-sm text-brand-text-secondary mb-5 sm:mb-6">
                 <div className="flex items-center justify-between">
@@ -270,20 +333,10 @@ export default function CartPage() {
                   </span>
                 </div>
 
-                {totalFreeCocopeat > 0 && (
-                  <div className="flex items-center justify-between text-brand-green font-medium">
-                    <span className="flex items-center gap-1.5">
-                      <Gift className="w-3.5 h-3.5 shrink-0" />
-                      Free Cocopeat Bonus:
-                    </span>
-                    <span className="font-semibold">+{totalFreeCocopeat} KG FREE</span>
-                  </div>
-                )}
-
                 <div className="flex items-center justify-between">
-                  <span>Delivery:</span>
+                  <span>Delivery Charges:</span>
                   <span className={deliveryCharge > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
-                    {deliveryCharge > 0 ? `₹${deliveryCharge.toLocaleString("en-IN")}` : "FREE DELIVERY"}
+                    {deliveryCharge > 0 ? `₹${deliveryCharge.toLocaleString("en-IN")} (₹45 × ${totalWeightKg} KG)` : "FREE (Surat)"}
                   </span>
                 </div>
 
@@ -327,7 +380,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Truck className="w-4 h-4 text-brand-green shrink-0" />
-                  <span>Carefully packed for doorstep dispatch</span>
+                  <span>Free delivery in Surat • ₹45/kg outside Surat</span>
                 </div>
               </div>
             </div>

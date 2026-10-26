@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/home/HeroSection";
 import { ProductCategoriesSection } from "@/components/home/ProductCategoriesSection";
 import { VermicompostProductSection } from "@/components/home/VermicompostProductSection";
+import { CocopeatProductSection } from "@/components/home/CocopeatProductSection";
 import { BrandStorySection } from "@/components/home/BrandStorySection";
 import { TrustSection } from "@/components/home/TrustSection";
 
@@ -16,10 +17,13 @@ export default function HomePage() {
       {/* 3. VERMICOMPOST PRODUCT SHOWCASE & PURCHASE SELECTION */}
       <VermicompostProductSection />
 
-      {/* 4. BRAND STORY SECTION */}
+      {/* 4. COCOPEAT PRODUCT SHOWCASE & PURCHASE SELECTION */}
+      <CocopeatProductSection />
+
+      {/* 5. BRAND STORY SECTION */}
       <BrandStorySection />
 
-      {/* 5. TRUST & QUALITY STANDARDS SECTION */}
+      {/* 6. TRUST & QUALITY STANDARDS SECTION */}
       <TrustSection />
     </div>
   );

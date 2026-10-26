@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { VermicompostPack, CartItem } from "@/types/product";
-import { SERVER_PRODUCT_CATALOG } from "@/lib/serverPricing";
+import { ProductPack, CartItem } from "@/types/product";
+import { SERVER_PRODUCT_CATALOG, calculateDeliveryCharge, isSuratCity } from "@/lib/serverPricing";
 
 interface CartContextType {
   items: CartItem[];
@@ -12,13 +12,16 @@ interface CartContextType {
   finalPayable: number;
   totalFreeCocopeat: number;
   totalWeightKg: number;
+  deliveryDistrict: string;
+  isSurat: boolean;
+  setDeliveryDistrict: (district: string) => void;
   isHydrated: boolean;
-  addToCart: (pack: VermicompostPack, quantity: number) => void;
+  addToCart: (pack: ProductPack, quantity: number) => void;
   updateQuantity: (packId: string, delta: number) => void;
   setExactQuantity: (packId: string, quantity: number) => void;
   removeItem: (packId: string) => void;
   clearCart: () => void;
-  lastAdded: { pack: VermicompostPack; quantity: number } | null;
+  lastAdded: { pack: ProductPack; quantity: number } | null;
   clearLastAdded: () => void;
 }
 
@@ -26,34 +29,44 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [deliveryDistrict, setDeliveryDistrictState] = useState<string>("Surat");
   const [isHydrated, setIsHydrated] = useState(false);
   const [lastAdded, setLastAdded] = useState<{
-    pack: VermicompostPack;
+    pack: ProductPack;
     quantity: number;
   } | null>(null);
 
-  // Hydrate cart from localStorage on mount safely and sync with authoritative catalog
+  // Hydrate cart and destination from localStorage on mount safely and sync with authoritative catalog
   useEffect(() => {
     try {
       const saved = localStorage.getItem("kp_cart");
       if (saved) {
         const parsed: CartItem[] = JSON.parse(saved);
-        // Automatically sync prices, free bonuses, and delivery settings from authoritative catalog
-        const synced = parsed
-          .map((item) => {
-            const pack = SERVER_PRODUCT_CATALOG[item.packId];
-            if (!pack) return null;
-            return {
-              ...item,
+        const synced: CartItem[] = [];
+        for (const item of parsed) {
+          const pack = SERVER_PRODUCT_CATALOG[item.packId];
+          if (pack) {
+            synced.push({
+              packId: item.packId,
               packName: pack.name,
-              price: pack.price,
+              category: pack.category,
               weightKg: pack.weightKg,
-              freeCocopeatKg: pack.freeCocopeatKg,
+              price: pack.price,
+              originalPrice: pack.originalPrice,
+              freeCocopeatKg: pack.freeCocopeatKg || 0,
               freeDelivery: pack.freeDelivery,
-            };
-          })
-          .filter((item): item is CartItem => item !== null);
+              image: pack.image,
+              quantity: item.quantity,
+              addedAt: item.addedAt || Date.now(),
+            });
+          }
+        }
         setItems(synced);
+      }
+
+      const savedDistrict = localStorage.getItem("kp_delivery_district");
+      if (savedDistrict) {
+        setDeliveryDistrictState(savedDistrict);
       }
     } catch {
       // Ignore localstorage read error
@@ -72,7 +85,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isHydrated]);
 
-  const addToCart = (pack: VermicompostPack, quantity: number) => {
+  const setDeliveryDistrict = (district: string) => {
+    setDeliveryDistrictState(district);
+    try {
+      localStorage.setItem("kp_delivery_district", district);
+    } catch {
+      // Ignore
+    }
+  };
+
+  const addToCart = (pack: ProductPack, quantity: number) => {
     if (quantity <= 0) return;
 
     setItems((prev) => {
@@ -85,10 +107,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const newItem: CartItem = {
           packId: pack.id,
           packName: pack.name,
+          category: pack.category,
           weightKg: pack.weightKg,
           price: pack.price,
-          freeCocopeatKg: pack.freeCocopeatKg,
+          originalPrice: pack.originalPrice,
+          freeCocopeatKg: pack.freeCocopeatKg || 0,
           freeDelivery: pack.freeDelivery,
+          image: pack.image,
           quantity,
           addedAt: Date.now(),
         };
@@ -138,7 +163,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
   const totalAmount = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const totalFreeCocopeat = items.reduce(
-    (acc, item) => acc + item.freeCocopeatKg * item.quantity,
+    (acc, item) => acc + (item.freeCocopeatKg || 0) * item.quantity,
     0
   );
   const totalWeightKg = items.reduce(
@@ -146,9 +171,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     0
   );
 
-  // Delivery Charge Rule: ₹60 only for 1 KG package orders; free delivery for 5 KG, 10 KG, and 30 KG
-  const hasOnlyOneKg = items.length > 0 && items.every((item) => item.packId === "vermicompost-1kg");
-  const deliveryCharge = hasOnlyOneKg ? 60 : 0;
+  // Delivery Calculation:
+  // In Surat: FREE DELIVERY (₹0)
+  // Outside Surat: ₹45 per 1 KG (totalWeightKg * 45)
+  const isSurat = isSuratCity(deliveryDistrict);
+  const deliveryCharge = calculateDeliveryCharge(totalWeightKg, deliveryDistrict);
   const finalPayable = totalAmount + deliveryCharge;
 
   return (
@@ -161,6 +188,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         finalPayable,
         totalFreeCocopeat,
         totalWeightKg,
+        deliveryDistrict,
+        isSurat,
+        setDeliveryDistrict,
         isHydrated,
         addToCart,
         updateQuantity,

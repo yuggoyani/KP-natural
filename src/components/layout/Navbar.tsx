@@ -11,8 +11,9 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Shop Vermicompost", href: "/#vermicompost-showcase" },
-  { label: "Our Products", href: "/#categories" },
+  { label: "Vermicompost", href: "/#vermicompost-showcase" },
+  { label: "Cocopeat", href: "/#cocopeat-showcase" },
+  { label: "Categories", href: "/#categories" },
   { label: "About Us", href: "/#story" },
   { label: "Track Order", href: "/track-order" },
   { label: "Order History", href: "/order-history" },

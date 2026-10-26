@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const calculatedPricing = calculateServerOrderPricing(cartItems);
+    const calculatedPricing = calculateServerOrderPricing(cartItems, deliveryAddress.districtOrCity);
 
     // 4. Generate Unique 5-digit Order ID (e.g. 48291)
     const orderId = generateOrderId();

@@ -8,21 +8,20 @@ import {
   Minus,
   Plus,
   ShoppingBag,
-  Sparkles,
   Truck,
-  Gift,
   ShieldCheck,
   Leaf,
   Check,
+  Tag,
 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { VermicompostPack } from "@/types/product";
+import { ProductPack } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 
-import { PRODUCT_PACKS } from "@/lib/serverPricing";
+import { VERMICOMPOST_PACKS } from "@/lib/serverPricing";
 
 const BENEFIT_HIGHLIGHTS = [
   "Supports healthy soil biology and natural aeration",
@@ -32,10 +31,10 @@ const BENEFIT_HIGHLIGHTS = [
 
 export function VermicompostProductSection() {
   const router = useRouter();
-  const [selectedPack, setSelectedPack] = useState<VermicompostPack>(PRODUCT_PACKS[2]); // Default to 10 KG
+  const [selectedPack, setSelectedPack] = useState<ProductPack>(VERMICOMPOST_PACKS[2]); // Default to 10 KG
   const [quantity, setQuantity] = useState<number>(1);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const { addToCart } = useCart();
+  const { addToCart, isSurat } = useCart();
 
   const handleQuantityChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
@@ -43,14 +42,10 @@ export function VermicompostProductSection() {
 
   const handleAddToCart = () => {
     addToCart(selectedPack, quantity);
-    const cocopeatText =
-      selectedPack.freeCocopeatKg > 0
-        ? ` with ${selectedPack.freeCocopeatKg * quantity} KG Free Cocopeat`
-        : "";
     showToast(
       `Added to Cart: ${quantity} × ${selectedPack.name} (₹${(
         selectedPack.price * quantity
-      ).toLocaleString("en-IN")})${cocopeatText}`
+      ).toLocaleString("en-IN")})`
     );
   };
 
@@ -67,9 +62,7 @@ export function VermicompostProductSection() {
   };
 
   const subtotalPrice = selectedPack.price * quantity;
-  const deliveryCharge = selectedPack.freeDelivery ? 0 : 60;
-  const finalOrderTotal = subtotalPrice + deliveryCharge;
-  const totalFreeCocopeat = selectedPack.freeCocopeatKg * quantity;
+  const totalWeight = selectedPack.weightKg * quantity;
 
   return (
     <section
@@ -127,7 +120,7 @@ export function VermicompostProductSection() {
                 </span>
               </div>
 
-              {/* Exact Artwork Presentation with 100% Fidelity */}
+              {/* Exact Artwork Presentation */}
               <div className="relative w-full aspect-[1/1.414] rounded-farm overflow-hidden border border-brand-border/70 bg-white shadow-xs">
                 <Image
                   src="/images/vermicompost-label.png"
@@ -160,7 +153,7 @@ export function VermicompostProductSection() {
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Truck className="w-4 h-4 text-brand-green shrink-0" />
-                <span>Carefully Packaged</span>
+                <span>Surat: Free Delivery • Outside: ₹45/kg</span>
               </span>
             </div>
           </div>
@@ -213,7 +206,7 @@ export function VermicompostProductSection() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
-                {PRODUCT_PACKS.map((pack) => {
+                {VERMICOMPOST_PACKS.map((pack) => {
                   const isSelected = selectedPack.id === pack.id;
                   return (
                     <div
@@ -242,34 +235,47 @@ export function VermicompostProductSection() {
                         </span>
                       )}
 
+                      {pack.badge && !pack.isPopular && (
+                        <span className="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-brand-green text-brand-ivory text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                          {pack.badge}
+                        </span>
+                      )}
+
                       <div>
                         {/* Top: Pack weight & Price */}
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <span className="font-serif font-bold text-base sm:text-lg text-brand-text-primary">
                             {pack.name}
                           </span>
-                          <span className="font-serif font-bold text-base sm:text-lg text-brand-green">
-                            ₹{pack.price.toLocaleString("en-IN")}
-                          </span>
+                          <div className="flex items-baseline gap-1.5">
+                            {pack.originalPrice && pack.originalPrice > pack.price && (
+                              <span className="text-xs text-brand-text-muted line-through">
+                                ₹{pack.originalPrice}
+                              </span>
+                            )}
+                            <span className="font-serif font-bold text-base sm:text-lg text-brand-green">
+                              ₹{pack.price.toLocaleString("en-IN")}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Special Offer or Details */}
-                        {pack.freeCocopeatKg > 0 ? (
-                          <div className="flex items-center gap-1.5 text-xs font-semibold text-brand-green">
-                            <Gift className="w-3.5 h-3.5 shrink-0" />
-                            <span>+ {pack.freeCocopeatKg} KG Cocopeat FREE</span>
+                        {/* Description or Discount tag */}
+                        {pack.discountPercent ? (
+                          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                            <Tag className="w-3 h-3" />
+                            <span>Special {pack.discountPercent}% OFF Discount</span>
                           </div>
                         ) : (
                           <div className="text-xs text-brand-text-muted">
-                            Standard Vermicompost Pack
+                            Standard Organic Farm Formulation
                           </div>
                         )}
                       </div>
 
                       {/* Delivery note */}
                       <div className="mt-2.5 pt-2 border-t border-brand-border/50 flex items-center justify-between text-[11px]">
-                        <span className={pack.freeDelivery ? "text-brand-green font-medium" : "text-brand-text-muted"}>
-                          {pack.freeDelivery ? "✓ FREE DELIVERY" : "+ ₹60 Delivery Charge"}
+                        <span className="text-brand-green font-medium">
+                          ✓ Surat Free Delivery
                         </span>
                         <div
                           className={cn(
@@ -321,7 +327,7 @@ export function VermicompostProductSection() {
                 </div>
 
                 <span className="text-xs text-brand-text-muted">
-                  Total Weight: <strong className="text-brand-text-primary">{selectedPack.weightKg * quantity} KG</strong>
+                  Total Weight: <strong className="text-brand-text-primary">{totalWeight} KG</strong>
                 </span>
               </div>
             </div>
@@ -336,38 +342,30 @@ export function VermicompostProductSection() {
                 <div className="flex items-center justify-between">
                   <span>Selected Pack:</span>
                   <span className="font-semibold text-brand-text-primary text-right">
-                    {quantity} × {selectedPack.name} ({selectedPack.weightKg * quantity} KG)
+                    {quantity} × {selectedPack.name} ({totalWeight} KG)
                   </span>
                 </div>
 
-                {totalFreeCocopeat > 0 ? (
-                  <div className="flex items-center justify-between text-brand-green font-medium">
-                    <span className="flex items-center gap-1.5">
-                      <Gift className="w-3.5 h-3.5 shrink-0" />
-                      Free Cocopeat Bonus:
-                    </span>
-                    <span className="font-semibold">+{totalFreeCocopeat} KG FREE</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between text-brand-text-muted text-xs">
-                    <span>Free Cocopeat:</span>
-                    <span>Available on 5 KG, 10 KG & 30 KG packs</span>
-                  </div>
-                )}
+                <div className="flex items-center justify-between">
+                  <span>Subtotal:</span>
+                  <span className="font-semibold text-brand-text-primary">
+                    ₹{subtotalPrice.toLocaleString("en-IN")}
+                  </span>
+                </div>
 
                 <div className="flex items-center justify-between">
-                  <span>Delivery:</span>
-                  <span className={selectedPack.freeDelivery ? "text-brand-green font-semibold" : "text-brand-text-primary font-semibold"}>
-                    {selectedPack.freeDelivery ? "FREE DELIVERY" : "₹60 Delivery Charge"}
+                  <span>Delivery Charges:</span>
+                  <span className="text-brand-green font-semibold">
+                    FREE in Surat • ₹45/KG Outside
                   </span>
                 </div>
 
                 <div className="pt-2.5 mt-2 border-t border-brand-border/80 flex items-center justify-between">
                   <span className="font-serif font-bold text-base sm:text-lg text-brand-text-primary">
-                    TOTAL:
+                    Item Total:
                   </span>
                   <span className="font-serif font-bold text-xl sm:text-2xl text-brand-green">
-                    ₹{finalOrderTotal.toLocaleString("en-IN")}
+                    ₹{subtotalPrice.toLocaleString("en-IN")}
                   </span>
                 </div>
               </div>
@@ -395,9 +393,9 @@ export function VermicompostProductSection() {
               </Button>
             </div>
 
-            {/* Note regarding future checkout */}
+            {/* Note regarding delivery & dispatch */}
             <p className="mt-3 text-[11px] text-brand-text-muted text-center sm:text-left w-full">
-              ✓ Fast doorstep farm dispatch • Transparent packaging • Customer support
+              ✓ Free delivery across Surat • ₹45/kg doorstep dispatch across other Gujarat cities
             </p>
 
           </div>

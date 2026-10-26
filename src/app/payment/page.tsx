@@ -766,40 +766,39 @@ function PaymentContent() {
 
               {/* Itemized Cart Items */}
               <div className="divide-y divide-brand-border/50 max-h-60 overflow-y-auto pr-1 mb-4">
-                {itemsList.map((item, idx) => (
-                  <div key={idx} className="py-2.5 flex items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <div className="relative w-10 h-12 rounded overflow-hidden border border-brand-border bg-white shrink-0">
-                        <Image
-                          src="/images/vermicompost-label.png"
-                          alt="Vermicompost"
-                          fill
-                          sizes="40px"
-                          className="object-contain p-0.5"
-                          unoptimized
-                        />
-                      </div>
-                      <div>
-                        <span className="font-serif font-bold text-brand-text-primary block">
-                          {item.product_name || "Vermicompost"} ({item.package_size})
-                        </span>
-                        <span className="text-brand-text-muted">
-                          Qty: {item.quantity} × ₹{Number(item.unit_price).toLocaleString("en-IN")}
-                        </span>
-                        {item.free_cocopeat_quantity > 0 && (
-                          <span className="text-[10px] font-semibold text-brand-green flex items-center gap-0.5 mt-0.5">
-                            <Gift className="w-2.5 h-2.5" />
-                            +{item.free_cocopeat_quantity} KG Cocopeat FREE
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                {itemsList.map((item, idx) => {
+                  const isCocopeat = (item.product_name || "").toLowerCase().includes("cocopeat");
+                  const artwork = isCocopeat ? "/images/cocopeat-packaging.jpg" : "/images/vermicompost-label.png";
 
-                    <span className="font-serif font-bold text-sm text-brand-text-primary shrink-0">
-                      ₹{Number(item.line_total).toLocaleString("en-IN")}
-                    </span>
-                  </div>
-                ))}
+                  return (
+                    <div key={idx} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative w-10 h-12 rounded overflow-hidden border border-brand-border bg-white shrink-0">
+                          <Image
+                            src={artwork}
+                            alt={item.product_name || "Product"}
+                            fill
+                            sizes="40px"
+                            className="object-contain p-0.5"
+                            unoptimized
+                          />
+                        </div>
+                        <div>
+                          <span className="font-serif font-bold text-brand-text-primary block">
+                            {item.product_name || "Farm Product"} {item.package_size ? `(${item.package_size})` : ""}
+                          </span>
+                          <span className="text-brand-text-muted">
+                            Qty: {item.quantity} × ₹{Number(item.unit_price).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </div>
+
+                      <span className="font-serif font-bold text-sm text-brand-text-primary shrink-0">
+                        ₹{Number(item.line_total).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Financial Calculation */}
@@ -811,20 +810,10 @@ function PaymentContent() {
                   </span>
                 </div>
 
-                {totalFreeCocopeat > 0 && (
-                  <div className="flex items-center justify-between text-brand-green font-medium">
-                    <span className="flex items-center gap-1">
-                      <Gift className="w-3 h-3" />
-                      Free Cocopeat Bonus:
-                    </span>
-                    <span>+{totalFreeCocopeat} KG FREE</span>
-                  </div>
-                )}
-
                 <div className="flex items-center justify-between">
-                  <span>Delivery:</span>
+                  <span>Delivery Charges:</span>
                   <span className={Number(deliveryCharge) > 0 ? "text-brand-text-primary font-semibold" : "text-brand-green font-semibold"}>
-                    {Number(deliveryCharge) > 0 ? `₹${Number(deliveryCharge).toLocaleString("en-IN")}` : "FREE DELIVERY"}
+                    {Number(deliveryCharge) > 0 ? `₹${Number(deliveryCharge).toLocaleString("en-IN")}` : "FREE (Surat Delivery)"}
                   </span>
                 </div>
 
